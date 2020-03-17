@@ -1,0 +1,41 @@
+{
+  "name": "next-sitemaps-plugin",
+  "version": "1.0.0",
+  "description": "A plugin to create sitemaps in a next application",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "jest --coverage",
+    "prerelease": "npm t && npm run lint",
+    "release": "standard-version",
+    "postrelease": "git push --follow-tags origin master && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moxystudio/next-sitemaps-plugin.git"
+  },
+  "keywords": [
+    "create-next-sitemaps",
+    "nextjs",
+    "routes",
+    "next-sitemaps"
+  ],
+  "author": "Rafael Ramalho <rafael.ramalho@moxy.studio>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/moxystudio/next-sitemaps-plugin/issues"
+  },
+  "homepage": "https://github.com/moxystudio/next-sitemaps-plugin#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^8.1.0",
+    "@commitlint/config-conventional": "^8.1.0",
+    "babel-jest": "^24.9.0",
+    "babel-preset-moxy": "^3.1.0",
+    "eslint": "^5.16.0",
+    "eslint-config-moxy": "^7.1.0",
+    "husky": "^3.0.5",
+    "jest": "^24.9.0",
+    "lint-staged": "^9.2.5",
+    "standard-version": "^7.0.0"
+  }
+}
