@@ -1,96 +1,48 @@
 'use strict';
 
-const fs = require('fs');
-const dynamicFileRegex = /^\[(.*)\].js$/;
-const dynamicFolderRegex = /\[(.*)\]/g;
+const {
+    buildEntriesFromFileSystem,
+    handleDynamicRoutesMapping,
+    writeEntriesToSitemap,
+} = require('./handlers');
 
+/**
+ * Adds the sitemap handling into the next build system.
+ *
+ * @param {Object} [nextConfig={}] - The next config that should be used in this plugin.
+ * @returns {Object} - The extended next config with a specific webpack handler for this plugin.
+ */
 module.exports = (nextConfig = {}) => ({
     ...nextConfig,
+    /**
+     * Handles the sitemap construction.
+     *
+     * @param {Object} config - A webpack config file.
+     * @param {Object} options - The options for the next plugins.
+     * @param {Object} options.config - The configuration for this plugin.
+     * @param {string} options.config.baseUrl - The base URL that should be used to prefix all the routes.
+     * @param {Object<string, Function>} options.config.mapDynamicRoutes - An object containing information of how to handle a certain dynamic route.
+     * @param {string} options.config.sitemapsLocation - The location of where you want the file to be saved to.
+     * @returns {Object} - The config or the result of next webpack handler.
+     */
     webpack(config, options) {
         const {
-            handleDynamicFile,
-            handleDynamicFolder,
-            sitemapsLocation = 'public/sitemaps.xml',
             baseUrl = '/',
+            mapDynamicRoutes,
+            sitemapsLocation = 'public/sitemaps.xml',
         } = options.config;
 
-        const sitemapEntries = [];
+        const sitemapEntries = buildEntriesFromFileSystem();
 
-        const buildFolderSitemapEntries = (folderItem, parentFolder = '/') => {
-            if (/^_/g.test(folderItem)) {
-                return;
-            }
-            if (folderItem === 'index.js') {
-                return sitemapEntries.push(parentFolder);
-            }
-
-            const regexResult = dynamicFileRegex.exec(folderItem);
-
-            if (regexResult && handleDynamicFile) {
-                const name = regexResult[1];
-
-                const replacementFiles = handleDynamicFile(name, parentFolder);
-
-                if (Array.isArray(replacementFiles)) {
-                    return replacementFiles.map((file) => `${parentFolder}${file}`).map((file) => sitemapEntries.push(file));
-                }
-
-                return sitemapEntries.push(`${parentFolder}${folderItem}`);
-            }
-
-            if (/.js$/g.test(folderItem)) {
-                return sitemapEntries.push(
-          `${parentFolder}${folderItem.replace('.js', '')}`
-                );
-            }
-
-            try {
-                fs.readdirSync(`pages/${parentFolder}${folderItem}`).map((subItem) =>
-                    buildFolderSitemapEntries(subItem, `${parentFolder}${folderItem}/`)
-                );
-            } catch (e) {
-                console.error(e.message);
-            }
-        };
-
-        const pagesDir = fs.readdirSync('pages').filter((page) => page !== 'api');
-
-        pagesDir.forEach((page) => buildFolderSitemapEntries(page));
-
-        const writableEntries = sitemapEntries
+        const mappedEntries = sitemapEntries
         .concat()
         .sort()
-        .map((entry) => {
-            if (!handleDynamicFolder) {
-                return entry;
-            }
+        .map((entry) => handleDynamicRoutesMapping(entry, mapDynamicRoutes))
+        .filter((entry) => !!entry);
 
-            const regexResult = dynamicFolderRegex.exec(entry);
+        const writableEntries = [].concat(...mappedEntries);
 
-            if (!regexResult) {
-                return entry;
-            }
-
-            const name = regexResult[1];
-            const replaceFunction = handleDynamicFolder[name];
-
-            if (!replaceFunction) {
-                return entry.replace(dynamicFolderRegex, name);
-            }
-
-            const dynamicFolderReplacer = replaceFunction(name);
-
-            return entry.replace(dynamicFolderRegex, dynamicFolderReplacer);
-        })
-        .map((entry) => `<url><loc>${baseUrl}${entry}</loc></url>`);
-
-        const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${
-            writableEntries.join('\n')
-        }</urlset>`;
-
-        fs.unlinkSync(sitemapsLocation);
-
-        fs.appendFileSync(sitemapsLocation, sitemap);
+        writeEntriesToSitemap(writableEntries, { baseUrl, sitemapsLocation });
 
         if (typeof nextConfig.webpack === 'function') {
             return nextConfig.webpack(config, options);
