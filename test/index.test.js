@@ -31,6 +31,8 @@ describe('Sitemaps plugin', () => {
         it('should discard it and proceed to create the sitemap', () => {
             const { webpack } = plugin();
 
+            console.warn = jest.fn();
+
             buildEntriesFromFileSystem.mockReturnValue(['/', '/[page]']);
             const result = webpack({}, { config: { baseUrl: 'batatas.com' } });
 
@@ -38,6 +40,8 @@ describe('Sitemaps plugin', () => {
                 baseUrl: 'batatas.com',
                 sitemapsLocation: 'public/sitemaps.xml',
             });
+
+            expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]');
 
             expect(result).toEqual({});
         });
@@ -47,6 +51,8 @@ describe('Sitemaps plugin', () => {
         it('should discard them and proceed to create the sitemap', () => {
             const { webpack } = plugin();
 
+            console.warn = jest.fn();
+
             buildEntriesFromFileSystem.mockReturnValue(['/', '/[page]', '/[page]/[id]', '/[page]/[id]/cool']);
             const result = webpack({}, { config: { baseUrl: 'batatas.com' } });
 
@@ -55,6 +61,10 @@ describe('Sitemaps plugin', () => {
                 sitemapsLocation: 'public/sitemaps.xml',
             });
 
+            expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]');
+            expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]/[id]');
+            expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]/[id]/cool');
+
             expect(result).toEqual({});
         });
     });
@@ -62,6 +72,8 @@ describe('Sitemaps plugin', () => {
     describe('when receiving a config with dynamic routes that are not mapped', () => {
         it('should discard them and proceed to create the sitemap', () => {
             const { webpack } = plugin();
+
+            console.warn = jest.fn();
 
             buildEntriesFromFileSystem.mockReturnValue(['/', '/[page]', '/[page]/[about]']);
             const result = webpack({},
@@ -79,6 +91,9 @@ describe('Sitemaps plugin', () => {
                 baseUrl: 'batatas.com',
                 sitemapsLocation: 'public/sitemaps.xml',
             });
+
+            expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]');
+            expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]/[about]');
 
             expect(result).toEqual({});
         });
@@ -133,6 +148,7 @@ describe('Sitemaps plugin', () => {
             const { webpack } = plugin();
 
             console.error = jest.fn();
+            console.warn = jest.fn();
             buildEntriesFromFileSystem.mockReturnValue(['/', '/[post]', '/[post]/[id]']);
 
             const result = webpack({}, { config: {
@@ -143,6 +159,7 @@ describe('Sitemaps plugin', () => {
             } });
 
             expect(console.error).toHaveBeenCalledWith("You haven't mapped the /[post] route yet!");
+            expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[post]');
 
             expect(writeEntriesToSitemap).toHaveBeenCalledWith(['/'], {
                 baseUrl: 'batatas.com',

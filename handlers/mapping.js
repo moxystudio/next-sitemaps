@@ -6,23 +6,23 @@ const previousMatchedReplacements = {};
  * Maps the dynamic routes available with the handlers specified in the config.
  *
  * @param {string} entry - The entry path that's being handled. Example: /home and /[page]/id.
- * @param {object<string, Function>} mapDynamicRoutes - An object containing information of how to handle a certain dynamic route.
+ * @param {object} options - The options that should be used to map and handle warnings.
+ * @param {Function} options.handleWarning - A function to be called when an warning occurs.
+ * @param {object<string, Function>} options.mapDynamicRoutes - An object containing information of how to handle a certain dynamic route.
  * @returns {string|null|Array<string>} - Returns null if it should be removed. Can return an modified entry or an array of modified entries.
  */
-module.exports = function handleDynamicRoutesMapping(entry, mapDynamicRoutes) {
+module.exports = function handleDynamicRoutesMapping(entry, { handleWarning, mapDynamicRoutes }) {
     const dynamicGroups = entry.match(/\[([^\\[\]]+)\]/g);
 
-    if (dynamicGroups && !mapDynamicRoutes) {
-        return null;
-    }
-
-    if (!mapDynamicRoutes || !dynamicGroups) {
+    if (!dynamicGroups) {
         return entry;
     }
 
     const mappingKeys = Object.keys(mapDynamicRoutes);
 
     if (!mappingKeys.includes(entry)) {
+        handleWarning(`WARNING: There's an unmapped dynamic route: ${entry}`);
+
         return null;
     }
 

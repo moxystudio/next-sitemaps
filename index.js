@@ -23,14 +23,17 @@ module.exports = (nextConfig = {}) => ({
      * @param {string} options.config.baseUrl - The base URL that should be used to prefix all the routes.
      * @param {object<string, Function>} options.config.mapDynamicRoutes - An object containing information of how to handle a certain dynamic route.
      * @param {string} options.config.sitemapsLocation - The location of where you want the file to be saved to.
+     * @param {string} options.config.handleError - A function to be called when an error occurs.
+     * @param {string} options.config.handleWarning - A function to be called when an warning occurs.
      * @returns {object} - The config or the result of next webpack handler.
      */
     webpack(config, options) {
         const {
             baseUrl = '/',
-            mapDynamicRoutes,
+            mapDynamicRoutes = {},
             sitemapsLocation = 'public/sitemaps.xml',
             handleError = (error) => console.error(error),
+            handleWarning = (message) => console.warn(message),
         } = options.config;
 
         try {
@@ -39,7 +42,7 @@ module.exports = (nextConfig = {}) => ({
             const mappedEntries = sitemapEntries
                 .concat()
                 .sort()
-                .map((entry) => handleDynamicRoutesMapping(entry, mapDynamicRoutes))
+                .map((entry) => handleDynamicRoutesMapping(entry, { handleWarning, mapDynamicRoutes }))
                 .filter((entry) => !!entry);
 
             const writableEntries = [].concat(...mappedEntries);
