@@ -11,28 +11,22 @@ const fs = require('fs');
  * @returns {Array} An array of mapped files and folders into possible urls.
  */
 function buildFolderSitemapEntries(sitemapEntries, file, parentFolder = '/') {
-    if (/^_/g.test(file)) {
+    if (file.startsWith('_')) {
         return sitemapEntries;
     }
 
     if (file === 'index.js') {
-        return sitemapEntries.concat(parentFolder);
+        return [...sitemapEntries, parentFolder];
     }
 
-    if (/.js$/g.test(file)) {
-        return sitemapEntries.concat(
-            `${parentFolder}${file.replace('.js', '')}`,
-        );
+    if (file.endsWith('.js')) {
+        return [...sitemapEntries, `${parentFolder}${file.replace('.js', '')}`];
     }
 
-    try {
-        return [].concat(
-            ...fs.readdirSync(`pages${parentFolder}${file}`).map((subItem) =>
-                buildFolderSitemapEntries(sitemapEntries, subItem, `${parentFolder}${file}/`),
-            ));
-    } catch (e) {
-        console.error(e.message);
-    }
+    return [].concat(
+        ...fs.readdirSync(`pages${parentFolder}${file}`).map((subItem) =>
+            buildFolderSitemapEntries(sitemapEntries, subItem, `${parentFolder}${file}/`),
+        ));
 }
 
 /**
@@ -41,7 +35,7 @@ function buildFolderSitemapEntries(sitemapEntries, file, parentFolder = '/') {
  *
  * @returns {Array} An array of pages and files mapped to URLs.
  */
-module.exports = function () {
+module.exports = function buildEntriesFromFileSystem() {
     const pagesDir = fs.readdirSync('pages').filter((page) => page !== 'api');
 
     return pagesDir.reduce((prev, page) => buildFolderSitemapEntries(prev, page), []);

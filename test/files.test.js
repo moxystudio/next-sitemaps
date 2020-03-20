@@ -83,19 +83,4 @@ describe('Files handler', () => {
             expect(buildEntriesFromFileSystem()).toEqual(['/', '/panda', '/zebra/zoo']);
         });
     });
-
-    describe('When the directory scan fails', () => {
-        it('should fail gracefully', () => {
-            console.error = jest.fn();
-            fs.readdirSync.mockImplementation((folder) => {
-                if (folder === 'pages') {
-                    return ['batatas'];
-                }
-                throw new Error('Failed to read dir');
-            });
-
-            buildEntriesFromFileSystem();
-            expect(console.error).toHaveBeenCalledWith('Failed to read dir');
-        });
-    });
 });

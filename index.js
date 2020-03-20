@@ -30,24 +30,29 @@ module.exports = (nextConfig = {}) => ({
             baseUrl = '/',
             mapDynamicRoutes,
             sitemapsLocation = 'public/sitemaps.xml',
+            handleError = (error) => console.error(error),
         } = options.config;
 
-        const sitemapEntries = buildEntriesFromFileSystem();
+        try {
+            const sitemapEntries = buildEntriesFromFileSystem();
 
-        const mappedEntries = sitemapEntries
-            .concat()
-            .sort()
-            .map((entry) => handleDynamicRoutesMapping(entry, mapDynamicRoutes))
-            .filter((entry) => !!entry);
+            const mappedEntries = sitemapEntries
+                .concat()
+                .sort()
+                .map((entry) => handleDynamicRoutesMapping(entry, mapDynamicRoutes))
+                .filter((entry) => !!entry);
 
-        const writableEntries = [].concat(...mappedEntries);
+            const writableEntries = [].concat(...mappedEntries);
 
-        writeEntriesToSitemap(writableEntries, { baseUrl, sitemapsLocation });
+            writeEntriesToSitemap(writableEntries, { baseUrl, sitemapsLocation });
 
-        if (typeof nextConfig.webpack === 'function') {
-            return nextConfig.webpack(config, options);
+            if (typeof nextConfig.webpack === 'function') {
+                return nextConfig.webpack(config, options);
+            }
+
+            return config;
+        } catch (error) {
+            handleError(error);
         }
-
-        return config;
     },
 });
