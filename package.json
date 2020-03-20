@@ -28,7 +28,7 @@
   "homepage": "https://github.com/moxystudio/next-sitemaps-plugin#readme",
   "devDependencies": {
     "@commitlint/config-conventional": "^8.1.0",
-    "@moxy/babel-preset": "^3.2.5",
+    "@moxy/eslint-config-base": "^11.0.3",
     "@moxy/eslint-config-jest": "^11.0.3",
     "@moxy/jest-config": "^2.1.0",
     "commitlint": "^8.3.5",

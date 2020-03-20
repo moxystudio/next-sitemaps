@@ -1,5 +1,7 @@
-import fs from 'fs';
-import { writeEntriesToSitemap } from '../handlers';
+'use strict';
+
+const fs = require('fs');
+const { writeEntriesToSitemap } = require('../handlers');
 
 jest.mock('fs', () => ({
     writeFileSync: jest.fn(),

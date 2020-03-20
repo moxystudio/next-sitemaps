@@ -1,5 +1,12 @@
 # next-sitemaps-plugin
 
+[![Build Status][travis-image]][travis-url] [![Coverage Status][codecov-image]][codecov-url]
+
+[travis-url]:https://travis-ci.org/moxystudio/next-sitemaps-plugin
+[travis-image]:https://img.shields.io/travis/moxystudio/next-sitemaps-plugin/master.svg
+[codecov-url]:https://codecov.io/gh/moxystudio/next-sitemaps-plugin
+[codecov-image]:https://img.shields.io/codecov/c/github/moxystudio/next-sitemaps-plugin/master.svg
+
 ## Usage
 
 ### Simple usage
@@ -12,7 +19,7 @@ withPlugins([
 ])
 ```
 
-You can also specify parameters to this plugin
+You can also specify options to this plugin:
 
 | Parameter         | Default                | Links                |
 |:-------------|:--------------------------:|--------------------------:|

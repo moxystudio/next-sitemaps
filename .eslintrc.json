@@ -4,7 +4,7 @@
         "node": true
     },
     "extends": [
-        "@moxy/eslint-config-base/cjs/es2019",
+        "@moxy/eslint-config-base/cjs",
         "@moxy/eslint-config-jest"
     ]
 }

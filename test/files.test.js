@@ -1,5 +1,7 @@
-import fs from 'fs';
-import { buildEntriesFromFileSystem } from '../handlers';
+'use strict';
+
+const fs = require('fs');
+const { buildEntriesFromFileSystem } = require('../handlers');
 
 jest.mock('fs', () => ({
     readdirSync: jest.fn(() => []),

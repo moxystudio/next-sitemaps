@@ -1,5 +1,7 @@
-import plugin from '../';
-import { buildEntriesFromFileSystem, writeEntriesToSitemap } from '../handlers';
+'use strict';
+
+const plugin = require('../');
+const { buildEntriesFromFileSystem, writeEntriesToSitemap } = require('../handlers');
 
 jest.mock('../handlers/files', () => jest.fn());
 jest.mock('../handlers/write', () => jest.fn());
