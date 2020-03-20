@@ -102,6 +102,12 @@ the above snippet creates the following routes:
 * https://app-finder.blabla/microsoft/VSStudio
 * https://app-finder.blabla/apple/iTunes
 
+## Tests
+
+```sh
+$ npm t
+$ npm t -- --watch  # To run watch mode
+```
 
 ## License
 
