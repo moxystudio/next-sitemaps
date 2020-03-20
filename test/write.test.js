@@ -22,7 +22,7 @@ describe('Write handler', () => {
             'some-location',
             `${baseXML}
 <url><loc>https://batatas.com/</loc></url>
-</urlset>`
+</urlset>`,
         );
 
         writeEntriesToSitemap(['/', '/another-entry'], {
@@ -35,7 +35,7 @@ describe('Write handler', () => {
             `${baseXML}
 <url><loc>https://batatas.com/</loc></url>
 <url><loc>https://batatas.com/another-entry</loc></url>
-</urlset>`
+</urlset>`,
         );
     });
 });

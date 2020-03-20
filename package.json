@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "jest --coverage",
+    "test": "jest",
     "prerelease": "npm t && npm run lint",
     "release": "standard-version",
     "postrelease": "git push --follow-tags origin master && npm publish"
@@ -25,21 +25,18 @@
   "bugs": {
     "url": "https://github.com/moxystudio/next-sitemaps-plugin/issues"
   },
-  "hooks": {
-    "pre-commit": "lint-staged"
-  },
   "homepage": "https://github.com/moxystudio/next-sitemaps-plugin#readme",
   "devDependencies": {
-    "@commitlint/cli": "^8.1.0",
     "@commitlint/config-conventional": "^8.1.0",
+    "@moxy/babel-preset": "^3.2.5",
+    "@moxy/eslint-config-jest": "^11.0.3",
     "@moxy/jest-config": "^2.1.0",
-    "babel-jest": "^24.9.0",
-    "babel-preset-moxy": "^3.1.0",
-    "eslint": "^5.16.0",
-    "eslint-config-moxy": "^7.1.0",
+    "commitlint": "^8.3.5",
+    "eslint": "^6.8.0",
     "husky": "^4.2.3",
-    "jest": "^24.9.0",
-    "lint-staged": "^9.5.0",
+    "jest": "^25.1.0",
+    "lint-staged": "^10.0.8",
     "standard-version": "^7.1.0"
-  }
+  },
+  "dependencies": {}
 }

@@ -6,7 +6,7 @@ const previousMatchedReplacements = {};
  * Maps the dynamic routes available with the handlers specified in the config.
  *
  * @param {string} entry - The entry path that's being handled. Example: /home and /[page]/id.
- * @param {Object<string, Function>} mapDynamicRoutes - An object containing information of how to handle a certain dynamic route.
+ * @param {object<string, Function>} mapDynamicRoutes - An object containing information of how to handle a certain dynamic route.
  * @returns {string|null|Array<string>} - Returns null if it should be removed. Can return an modified entry or an array of modified entries.
  */
 module.exports = function handleDynamicRoutesMapping(entry, mapDynamicRoutes) {

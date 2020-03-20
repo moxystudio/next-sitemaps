@@ -70,7 +70,7 @@ describe('Sitemaps plugin', () => {
                             '/[about]': () => ['oops, wrong map!'],
                         },
                     },
-                }
+                },
             );
 
             expect(writeEntriesToSitemap).toHaveBeenCalledWith(['/'], {

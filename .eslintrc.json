@@ -1,8 +1,10 @@
 {
     "root": true,
+    "env": {
+        "node": true
+    },
     "extends": [
-        "eslint-config-moxy/es9",
-        "eslint-config-moxy/addons/node",
-        "eslint-config-moxy/addons/jest"
+        "@moxy/eslint-config-base/cjs/es2019",
+        "@moxy/eslint-config-jest"
     ]
 }

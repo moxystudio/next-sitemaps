@@ -1,10 +1,5 @@
 {
-    "root": false,
     "parserOptions": {
         "sourceType": "module"
-    },
-    "extends": [
-        "eslint-config-moxy/es9",
-        "eslint-config-moxy/addons/node"
-    ]
+    }
 }

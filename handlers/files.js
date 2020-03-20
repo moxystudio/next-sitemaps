@@ -21,14 +21,14 @@ function buildFolderSitemapEntries(sitemapEntries, file, parentFolder = '/') {
 
     if (/.js$/g.test(file)) {
         return sitemapEntries.concat(
-                    `${parentFolder}${file.replace('.js', '')}`
+            `${parentFolder}${file.replace('.js', '')}`,
         );
     }
 
     try {
         return [].concat(
             ...fs.readdirSync(`pages${parentFolder}${file}`).map((subItem) =>
-                buildFolderSitemapEntries(sitemapEntries, subItem, `${parentFolder}${file}/`)
+                buildFolderSitemapEntries(sitemapEntries, subItem, `${parentFolder}${file}/`),
             ));
     } catch (e) {
         console.error(e.message);
