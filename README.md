@@ -7,6 +7,8 @@
 [codecov-url]:https://codecov.io/gh/moxystudio/next-sitemaps-plugin
 [codecov-image]:https://img.shields.io/codecov/c/github/moxystudio/next-sitemaps-plugin/master.svg
 
+This plugin enables your next.js application to have working sitemaps so that search engine crawlers can index all your pages.
+
 ## Usage
 
 ### Simple usage
