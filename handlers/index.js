@@ -2,10 +2,10 @@
 
 const buildEntriesFromFileSystem = require('./files');
 const handleDynamicRoutesMapping = require('./mapping');
-const writeEntriesToSitemap = require('./write');
+const generateSitemapFromEntries = require('./generate');
 
 module.exports = {
     buildEntriesFromFileSystem,
     handleDynamicRoutesMapping,
-    writeEntriesToSitemap,
+    generateSitemapFromEntries,
 };
