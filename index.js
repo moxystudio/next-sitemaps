@@ -1,6 +1,7 @@
 'use strict';
 
 const {
+    getExistingEntries,
     handleDynamicRoutesMapping,
     generateSitemapFromEntries,
 } = require('./handlers');
@@ -10,8 +11,9 @@ const createSitemap = async ({
     mapDynamicRoutes = {},
     handleWarning = (message) => console.warn(message),
 }) => {
-    const sitemapEntries = ['/contacts', '/', '/project/[id]', '/[ident]',
-        '/[ident]/[page]/contact', '/[ident]/[page]/[stuff]', '/[ident]/[cenas]', '/project/[id]/[test]'];
+    const sitemapEntries = getExistingEntries();
+
+    console.log('sitemapEntries', sitemapEntries);
     const mappedEntries = await handleDynamicRoutesMapping(sitemapEntries, { handleWarning, mapDynamicRoutes });
     const sitemapXml = generateSitemapFromEntries(mappedEntries, { baseUrl });
 
@@ -20,12 +22,6 @@ const createSitemap = async ({
 
 module.exports = (options = {}) => {
     console.log('REQUEST INIT');
-    // console.log('received options:', options);
-    // const {
-    //     baseUrl = '/',
-    //     mapDynamicRoutes = {},
-    //     sitemapsLocation = 'public/sitemaps.xml',
-    // } = options;
 
     return async (req, res) => {
         try {

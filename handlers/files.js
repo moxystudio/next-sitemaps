@@ -1,43 +1,25 @@
 'use strict';
 
-const fs = require('fs');
+const glob = require('glob');
 
 /**
- * Reads all files and directories inside the next's pages folder and maps them into urls.
- *
- * @param {Array} sitemapEntries - An array of entries already handled.
- * @param {string} file - A string referring to a file or folder.
- * @param {string} [parentFolder='/'] - The previous folder that was handled before the current file.
- * @returns {Array} An array of mapped files and folders into possible urls.
- */
-function buildFolderSitemapEntries(sitemapEntries, file, parentFolder = '/') {
-    if (file.startsWith('_')) {
-        return sitemapEntries;
-    }
-
-    if (file === 'index.js') {
-        return [...sitemapEntries, parentFolder];
-    }
-
-    if (file.endsWith('.js')) {
-        return [...sitemapEntries, `${parentFolder}${file.replace('.js', '')}`];
-    }
-
-    return [].concat(
-        ...fs.readdirSync(`pages${parentFolder}${file}`).map((subItem) =>
-            buildFolderSitemapEntries(sitemapEntries, subItem, `${parentFolder}${file}/`),
-        ));
-}
-
-/**
- * Reads all files and directories inside the next's pages folder and maps them into urls.
+ * Matches all files and directories inside the next's pages folder and maps them into urls.
  * The api folder and the template pages (_document, _error, etc) are ignored.
  *
- * @returns {Array} An array of pages and files mapped to URLs.
+ * @returns {Array} An array of mapped files and folders (sorted descending) into possible urls.
  */
-module.exports = function buildEntriesFromFileSystem() {
-    const pagesDir = fs.readdirSync('pages').filter((page) => page !== 'api');
+module.exports = function getExistingEntries() {
+    const diskRoutes = glob.sync('pages/**/*.js', { ignore: ['pages/api/**', 'pages/_*.js'] });
 
-    return pagesDir.reduce((prev, page) => buildFolderSitemapEntries(prev, page), []);
+    if (diskRoutes.length === 0) {
+        throw new Error('\'pages/\' directory is empty');
+    }
+
+    const routes = diskRoutes.map((diskRoute) => {
+        const route = diskRoute.replace(/^pages/, '').replace(/.js$/, '');
+
+        return route.replace('index', '');
+    });
+
+    return routes.sort().reverse();
 };
-

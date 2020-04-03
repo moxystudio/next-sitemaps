@@ -38,5 +38,7 @@
     "lint-staged": "^10.0.8",
     "standard-version": "^7.1.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "glob": "^7.1.6"
+  }
 }

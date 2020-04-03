@@ -1,11 +1,11 @@
 'use strict';
 
-const buildEntriesFromFileSystem = require('./files');
+const getExistingEntries = require('./files');
 const handleDynamicRoutesMapping = require('./mapping');
 const generateSitemapFromEntries = require('./generate');
 
 module.exports = {
-    buildEntriesFromFileSystem,
+    getExistingEntries,
     handleDynamicRoutesMapping,
     generateSitemapFromEntries,
 };

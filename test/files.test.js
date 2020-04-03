@@ -1,10 +1,10 @@
 'use strict';
 
-const fs = require('fs');
-const { buildEntriesFromFileSystem } = require('../handlers');
+const glob = require('glob');
+const { getExistingEntries } = require('../handlers');
 
-jest.mock('fs', () => ({
-    readdirSync: jest.fn(() => []),
+jest.mock('glob', () => ({
+    sync: jest.fn(() => []),
 }));
 
 afterEach(() => {
@@ -12,73 +12,39 @@ afterEach(() => {
 });
 
 describe('When the pages directory is empty', () => {
-    it('should return an empty array', () => {
-        expect(buildEntriesFromFileSystem()).toEqual([]);
-    });
-});
-
-describe('When the pages directory has an api folder', () => {
-    it('should ignore it', () => {
-        fs.readdirSync.mockReturnValue(['api']);
-
-        expect(buildEntriesFromFileSystem()).toEqual([]);
-    });
-});
-
-describe('When the pages directory has a next template file', () => {
-    it('should ignore it', () => {
-        fs.readdirSync.mockReturnValue(['_document', '_page', '_something']);
-
-        expect(buildEntriesFromFileSystem()).toEqual([]);
+    it('should throw an error', () => {
+        expect(() => getExistingEntries()).toThrow('\'pages/\' directory is empty');
     });
 });
 
 describe('When there is an index.js file', () => {
     it('should map it to the parent folder route', () => {
-        fs.readdirSync.mockReturnValue(['index.js']);
+        glob.sync.mockReturnValue(['pages/index.js']);
 
-        expect(buildEntriesFromFileSystem()).toEqual(['/']);
+        expect(getExistingEntries()).toEqual(['/']);
     });
 });
 
 describe('When there is an index.js file as a sub-folder file', () => {
     it('should map it to the parent folder route', () => {
-        fs.readdirSync.mockImplementation((folder) => {
-            if (folder === 'pages') {
-                return ['index.js', 'stuff'];
-            }
-            if (folder === 'pages/stuff') {
-                return ['index.js'];
-            }
+        glob.sync.mockReturnValue(['pages/index.js', 'pages/stuff/index.js']);
 
-            return [];
-        });
-
-        expect(buildEntriesFromFileSystem()).toEqual(['/', '/stuff/']);
+        expect(getExistingEntries()).toEqual(['/stuff/', '/']);
     });
 });
 
 describe('When there is an .js file', () => {
     it('should remove the extension and map it', () => {
-        fs.readdirSync.mockReturnValue(['cool.js']);
+        glob.sync.mockReturnValue(['pages/cool.js']);
 
-        expect(buildEntriesFromFileSystem()).toEqual(['/cool']);
+        expect(getExistingEntries()).toEqual(['/cool']);
     });
 });
 
 describe('When there is an .js file as a sub-folder file', () => {
     it('should map it to the parent folder route', () => {
-        fs.readdirSync.mockImplementation((folder) => {
-            if (folder === 'pages') {
-                return ['index.js', 'panda.js', 'zebra'];
-            }
-            if (folder === 'pages/zebra') {
-                return ['zoo.js'];
-            }
+        glob.sync.mockReturnValue(['pages/index.js', 'pages/panda.js', 'pages/zebra/zoo.js']);
 
-            return [];
-        });
-
-        expect(buildEntriesFromFileSystem()).toEqual(['/', '/panda', '/zebra/zoo']);
+        expect(getExistingEntries()).toEqual(['/zebra/zoo', '/panda', '/']);
     });
 });
