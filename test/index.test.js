@@ -1,183 +1,177 @@
 'use strict';
 
-const plugin = require('../');
-const { buildEntriesFromFileSystem, writeEntriesToSitemap } = require('../handlers');
+const request = require('supertest');
+const { apiResolver } = require('next/dist/next-server/server/api-utils');
+const setupSitemap = require('../');
+const {
+    getExistingEntries,
+    handleDynamicRoutesMapping,
+    generateSitemapFromEntries,
+} = require('../handlers');
 
 jest.mock('../handlers/files', () => jest.fn());
-jest.mock('../handlers/write', () => jest.fn());
+jest.mock('../handlers/mapping', () => jest.fn());
+jest.mock('../handlers/generate', () => jest.fn());
 
-afterEach(() => {
-    jest.resetAllMocks();
+const enhance = (handler) => (req, res) => apiResolver(req, res, undefined, handler);
+const mockedSitemapXml = 'sitemap-xml';
+
+beforeEach(() => {
+    console.error.mock && console.error.mockRestore();
+    console.warn.mock && console.warn.mockRestore();
 });
 
-describe('when receiving a simple config with no dynamic routes', () => {
-    it('should create a simple sitemap', () => {
-        const { webpack } = plugin();
+describe('When method is supported', () => {
+    it('should respond what generateSitemapFromEntries returns', async () => {
+        generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
 
-        buildEntriesFromFileSystem.mockReturnValue(['/', '/page1', '/page2']);
-        const result = webpack({}, { config: { baseUrl: 'batatas.com' } });
+        const handler = setupSitemap();
 
-        expect(writeEntriesToSitemap).toHaveBeenCalledWith(['/', '/page1', '/page2'], {
-            baseUrl: 'batatas.com',
-            sitemapsLocation: 'public/sitemaps.xml',
+        await request(enhance(handler))
+            .get('/')
+            .expect('Content-Type', 'application/xml')
+            .expect(200)
+            .then((res) => {
+                expect(res.text).toEqual(mockedSitemapXml);
+            });
+    });
+
+    it('should use the default baseUrl option if no options are passed', async () => {
+        const mockedSitemapEntries = ['/', '/page1', '/page2'];
+
+        handleDynamicRoutesMapping.mockReturnValue(mockedSitemapEntries);
+        generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
+
+        const handler = setupSitemap();
+
+        await request(enhance(handler))
+            .get('/')
+            .expect('Content-Type', 'application/xml')
+            .expect(200)
+            .then((res) => {
+                expect(res.text).toEqual(mockedSitemapXml);
+                expect(generateSitemapFromEntries).toHaveBeenCalledWith(mockedSitemapEntries, {
+                    baseUrl: '/',
+                });
+            });
+    });
+
+    it('should respond with 500 if any mapper throws', async () => {
+        jest.spyOn(console, 'error').mockImplementation();
+        handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
+
+        const handler = setupSitemap();
+
+        await request(enhance(handler))
+            .get('/')
+            .expect('Content-Type', /^application\/json/)
+            .expect(500)
+            .then((res) => {
+                expect(res.body).toEqual({
+                    statusCode: 500,
+                    error: 'Internal Server Error',
+                    message: 'An internal server error occurred',
+                });
+            });
+    });
+
+    it('should log 500 errors', async () => {
+        jest.spyOn(console, 'error').mockImplementation();
+        handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
+
+        const handler = setupSitemap();
+
+        await request(enhance(handler))
+            .get('/')
+            .expect('Content-Type', /^application\/json/)
+            .expect(500)
+            .then(() => {
+                expect(console.error).toHaveBeenCalledTimes(1);
+                expect(console.error.mock.calls[0][0]).toMatch('Error: foo');
+            });
+    });
+
+    describe('options', () => {
+        it('should allow passing a custom baseUrl', async () => {
+            const customBaseUrl = 'https://foo';
+            const mockedSitemapEntries = ['/', '/page1', '/page2'];
+
+            handleDynamicRoutesMapping.mockReturnValue(mockedSitemapEntries);
+            generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
+
+            const handler = setupSitemap({ baseUrl: customBaseUrl });
+
+            await request(enhance(handler))
+                .get('/')
+                .expect(200)
+                .then(() => {
+                    expect(generateSitemapFromEntries).toHaveBeenCalledWith(mockedSitemapEntries, {
+                        baseUrl: customBaseUrl,
+                    });
+                });
         });
 
-        expect(result).toEqual({});
-    });
-});
+        it('should allow passing a custom handleError', async () => {
+            jest.spyOn(console, 'warn').mockImplementation();
 
-describe('when receiving a config with unspecified dynamic routes', () => {
-    it('should discard it and proceed to create the sitemap', () => {
-        const { webpack } = plugin();
-
-        console.warn = jest.fn();
-
-        buildEntriesFromFileSystem.mockReturnValue(['/', '/[page]']);
-        const result = webpack({}, { config: { baseUrl: 'batatas.com' } });
-
-        expect(writeEntriesToSitemap).toHaveBeenCalledWith(['/'], {
-            baseUrl: 'batatas.com',
-            sitemapsLocation: 'public/sitemaps.xml',
-        });
-
-        expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]');
-
-        expect(result).toEqual({});
-    });
-});
-
-describe('when receiving a config with multiple unspecified dynamic routes', () => {
-    it('should discard them and proceed to create the sitemap', () => {
-        const { webpack } = plugin();
-
-        console.warn = jest.fn();
-
-        buildEntriesFromFileSystem.mockReturnValue(['/', '/[page]', '/[page]/[id]', '/[page]/[id]/cool']);
-        const result = webpack({}, { config: { baseUrl: 'batatas.com' } });
-
-        expect(writeEntriesToSitemap).toHaveBeenCalledWith(['/'], {
-            baseUrl: 'batatas.com',
-            sitemapsLocation: 'public/sitemaps.xml',
-        });
-
-        expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]');
-        expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]/[id]');
-        expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]/[id]/cool');
-
-        expect(result).toEqual({});
-    });
-});
-
-describe('when receiving a config with dynamic routes that are not mapped', () => {
-    it('should discard them and proceed to create the sitemap', () => {
-        const { webpack } = plugin();
-
-        console.warn = jest.fn();
-
-        buildEntriesFromFileSystem.mockReturnValue(['/', '/[page]', '/[page]/[about]']);
-        const result = webpack({},
-            {
-                config: {
-                    baseUrl: 'batatas.com',
-                    mapDynamicRoutes: {
-                        '/[about]': () => ['oops, wrong map!'],
-                    },
-                },
-            },
-        );
-
-        expect(writeEntriesToSitemap).toHaveBeenCalledWith(['/'], {
-            baseUrl: 'batatas.com',
-            sitemapsLocation: 'public/sitemaps.xml',
-        });
-
-        expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]');
-        expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[page]/[about]');
-
-        expect(result).toEqual({});
-    });
-});
-
-describe('when receiving a config with a dynamic route', () => {
-    it('should map it correctly', () => {
-        const { webpack } = plugin();
-
-        buildEntriesFromFileSystem.mockReturnValue(['/', '/[page]']);
-        const result = webpack({}, { config: {
-            baseUrl: 'batatas.com',
-            mapDynamicRoutes: {
-                '/[page]': () => ['page-1', 'page-2', 'page-abc'],
-            },
-        } });
-
-        expect(writeEntriesToSitemap).toHaveBeenCalledWith(['/', '/page-1', '/page-2', '/page-abc'], {
-            baseUrl: 'batatas.com',
-            sitemapsLocation: 'public/sitemaps.xml',
-        });
-
-        expect(result).toEqual({});
-    });
-});
-
-describe('when receiving a config with multiple dynamic routes', () => {
-    it('should map them correctly', () => {
-        const { webpack } = plugin();
-
-        buildEntriesFromFileSystem.mockReturnValue(['/', '/[page]', '/[page]/[id]']);
-        const result = webpack({}, { config: {
-            baseUrl: 'batatas.com',
-            mapDynamicRoutes: {
-                '/[page]': () => ['home', 'about'],
-                '/[page]/[id]': ({ page }) => [`${page}-1`, `${page}-2`],
-            },
-        } });
-
-        expect(writeEntriesToSitemap).toHaveBeenCalledWith(
-            ['/', '/home', '/about', '/home/home-1', '/home/home-2', '/about/about-1', '/about/about-2'], {
-                baseUrl: 'batatas.com',
-                sitemapsLocation: 'public/sitemaps.xml',
+            const customHandleError = jest.fn((err) => {
+                console.warn(`This error message is ${err.data.originalError.message}`);
             });
 
-        expect(result).toEqual({});
-    });
-});
+            handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
 
-describe('when receiving a config with multiple dynamic routes but a parent page was not mapped', () => {
-    it('should throw an error and continue the sitemap building', () => {
-        const { webpack } = plugin();
+            const handler = setupSitemap({ handleError: customHandleError });
 
-        console.error = jest.fn();
-        console.warn = jest.fn();
-        buildEntriesFromFileSystem.mockReturnValue(['/', '/[post]', '/[post]/[id]']);
-
-        const result = webpack({}, { config: {
-            baseUrl: 'batatas.com',
-            mapDynamicRoutes: {
-                '/[post]/[id]': ({ post }) => [`${post}-1`, `${post}-2`],
-            },
-        } });
-
-        expect(console.error).toHaveBeenCalledWith("You haven't mapped the /[post] route yet!");
-        expect(console.warn).toHaveBeenCalledWith('WARNING: There\'s an unmapped dynamic route: /[post]');
-
-        expect(writeEntriesToSitemap).toHaveBeenCalledWith(['/'], {
-            baseUrl: 'batatas.com',
-            sitemapsLocation: 'public/sitemaps.xml',
+            await request(enhance(handler))
+                .get('/')
+                .expect('Content-Type', /^application\/json/)
+                .expect(500)
+                .then(() => {
+                    expect(customHandleError).toHaveBeenCalledTimes(1);
+                    expect(console.warn).toHaveBeenCalledTimes(1);
+                    expect(console.warn.mock.calls[0][0]).toEqual('This error message is foo');
+                });
         });
 
-        expect(result).toEqual({});
+        it('should allow passing a custom handleWarning', async () => {
+            getExistingEntries.mockReturnValue(['/page1']);
+            handleDynamicRoutesMapping.mockReturnValue(['/page1']);
+            generateSitemapFromEntries.mockReturnValue(['/page1']);
+
+            const customHandleWarning = jest.fn();
+
+            const handler = setupSitemap({ handleWarning: customHandleWarning });
+
+            await request(enhance(handler))
+                .get('/')
+                .expect(200)
+                .then(() => {
+                    expect(handleDynamicRoutesMapping).toHaveBeenCalledWith(['/page1'], {
+                        handleWarning: customHandleWarning,
+                        mapDynamicRoutes: {},
+                    });
+                });
+        });
     });
 });
 
-describe('Next specific algorithms', () => {
-    it('should call the webpack function from next config', () => {
-        const webpackMock = jest.fn();
-        const { webpack } = plugin({ webpack: webpackMock });
+describe('When method is not supported', () => {
+    it('should respond with 405', async () => {
+        generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
 
-        buildEntriesFromFileSystem.mockReturnValue([]);
+        const handler = setupSitemap();
 
-        webpack('some-config', { config: 'some-configs' });
-
-        expect(webpackMock).toHaveBeenCalledWith('some-config', { config: 'some-configs' });
+        await request(enhance(handler))
+            .post('/')
+            .expect(405)
+            .then((res) => {
+                expect(res.body).toEqual({
+                    statusCode: 405,
+                    error: 'Method Not Allowed',
+                    message: 'Method POST is not supported for this endpoint',
+                });
+                // Response must include an Allow header
+                expect(res.headers.allow).toEqual('GET');
+            });
     });
 });

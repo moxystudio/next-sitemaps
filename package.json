@@ -1,7 +1,7 @@
 {
-  "name": "next-sitemaps-plugin",
+  "name": "next-sitemaps",
   "version": "1.0.0",
-  "description": "A plugin to create sitemaps in a next application",
+  "description": "An API handler to create sitemaps in a next application",
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
@@ -20,7 +20,7 @@
     "routes",
     "next-sitemaps"
   ],
-  "author": "Rafael Ramalho <rafael.ramalho@moxy.studio>",
+  "author": "Pedro Santos <pedro.santos@moxy.studio>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/moxystudio/next-sitemaps-plugin/issues"
@@ -36,9 +36,12 @@
     "husky": "^4.2.3",
     "jest": "^25.1.0",
     "lint-staged": "^10.0.8",
-    "standard-version": "^7.1.0"
+    "next": "^9.3.4",
+    "standard-version": "^7.1.0",
+    "supertest": "^4.0.2"
   },
   "dependencies": {
+    "@hapi/boom": "^9.1.0",
     "glob": "^7.1.6"
   }
 }

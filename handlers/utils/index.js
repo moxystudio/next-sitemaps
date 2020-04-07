@@ -1,7 +1,7 @@
 'use strict';
 
-const getReplacingInfo = require('./replacing-info');
+const replace = require('./replace');
 
 module.exports = {
-    getReplacingInfo,
+    replace,
 };

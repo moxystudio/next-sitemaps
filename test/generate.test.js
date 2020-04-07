@@ -5,7 +5,7 @@ const { generateSitemapFromEntries } = require('../handlers');
 const baseXML = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">';
 
 describe('When entries are passed', () => {
-    it('should map the entries into xml', () => {
+    it('should create the xml successfully based on the passed entries', () => {
         const sitemap = generateSitemapFromEntries(['/', '/another-entry'], { baseUrl: 'https://batatas.com' });
 
         const expectedSitemap =
