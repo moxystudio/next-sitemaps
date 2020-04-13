@@ -7,7 +7,7 @@
 [codecov-url]:https://codecov.io/gh/moxystudio/next-sitemaps-plugin
 [codecov-image]:https://img.shields.io/codecov/c/github/moxystudio/next-sitemaps-plugin/master.svg
 
-This module is an API handler that enables your next.js application to have working sitemaps so that search engine crawlers can index all your pages.
+This module provides an API handler and a plugin that enables your next.js application to have working sitemaps so that search engine crawlers can index all your pages.
 
 ## Installation
 
@@ -19,10 +19,22 @@ npm install @moxy/next-sitemaps
 
 ### Simple usage
 
-In `pages/api/sitemap.js`
+**1. Add the plugin to `next.config.js`**
 
 ```js
-import setupSitemap from '@moxy/next-sitemaps';
+const { withSitemap } = require('@moxy/next-sitemaps');
+
+withPlugins([
+    //other plugins..
+    withSitemap()
+    //other plugins...
+])
+```
+
+**2. Add the API handler on `pages/api/sitemap.js`**
+
+```js
+import { setupSitemap } from '@moxy/next-sitemaps';
 
 export default setupSitemap({
     baseUrl: 'https://moxy.studio',
@@ -33,6 +45,12 @@ export default setupSitemap({
 ```
 
 ## API
+
+### withSitemap()
+
+This plugin will match all files and directories inside the next's `/pages` folder and it will map them into urls. Then, a global named `__NEXT_ROUTES__` will be created with all the urls.
+
+> ℹ️ If you are on dev environment and you have added a new route, you must restart your server to update the global `__NEXT_ROUTES__` and hence, get the correct sitemap.
 
 ### setupSitemap([options])
 

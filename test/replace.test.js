@@ -1,6 +1,6 @@
 'use strict';
 
-const { replace } = require('../handlers/utils');
+const replace = require('../api-handler/replace');
 
 describe('When the required params are not passed', () => {
     it('should return an empty array', () => {

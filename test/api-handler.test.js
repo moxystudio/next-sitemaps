@@ -2,21 +2,18 @@
 
 const request = require('supertest');
 const { apiResolver } = require('next/dist/next-server/server/api-utils');
-const setupSitemap = require('../');
-const {
-    getExistingEntries,
-    handleDynamicRoutesMapping,
-    generateSitemapFromEntries,
-} = require('../handlers');
+const setupSitemap = require('../api-handler');
+const handleDynamicRoutesMapping = require('../api-handler/mapping');
+const generateSitemapFromEntries = require('../api-handler/generate');
 
-jest.mock('../handlers/files', () => jest.fn());
-jest.mock('../handlers/mapping', () => jest.fn());
-jest.mock('../handlers/generate', () => jest.fn());
+jest.mock('../api-handler/mapping', () => jest.fn());
+jest.mock('../api-handler/generate', () => jest.fn());
 
 const enhance = (handler) => (req, res) => apiResolver(req, res, undefined, handler);
 const mockedSitemapXml = 'sitemap-xml';
 
 beforeEach(() => {
+    global.__NEXT_ROUTES__ = [];
     console.error.mock && console.error.mockRestore();
     console.warn.mock && console.warn.mockRestore();
 });
@@ -67,6 +64,26 @@ describe('When method is supported', () => {
             .expect('Content-Type', /^application\/json/)
             .expect(500)
             .then((res) => {
+                expect(res.body).toEqual({
+                    statusCode: 500,
+                    error: 'Internal Server Error',
+                    message: 'An internal server error occurred',
+                });
+            });
+    });
+
+    it('should respond with 500 if there are no entries to map', async () => {
+        jest.spyOn(console, 'error').mockImplementation();
+        delete global.__NEXT_ROUTES__;
+
+        const handler = setupSitemap();
+
+        await request(enhance(handler))
+            .get('/')
+            .expect('Content-Type', /^application\/json/)
+            .expect(500)
+            .then((res) => {
+                expect(console.error.mock.calls[0][0]).toMatch('Error: There are no entries to map. You might want to check the __NEXT_ROUTES__ global variable.'); // eslint-disable-line max-len
                 expect(res.body).toEqual({
                     statusCode: 500,
                     error: 'Internal Server Error',
@@ -134,9 +151,11 @@ describe('When method is supported', () => {
         });
 
         it('should allow passing a custom handleWarning', async () => {
-            getExistingEntries.mockReturnValue(['/page1']);
-            handleDynamicRoutesMapping.mockReturnValue(['/page1']);
-            generateSitemapFromEntries.mockReturnValue(['/page1']);
+            const routes = ['/page1'];
+
+            global.__NEXT_ROUTES__ = routes;
+            handleDynamicRoutesMapping.mockReturnValue(routes);
+            generateSitemapFromEntries.mockReturnValue(routes);
 
             const customHandleWarning = jest.fn();
 
@@ -146,7 +165,7 @@ describe('When method is supported', () => {
                 .get('/')
                 .expect(200)
                 .then(() => {
-                    expect(handleDynamicRoutesMapping).toHaveBeenCalledWith(['/page1'], {
+                    expect(handleDynamicRoutesMapping).toHaveBeenCalledWith(routes, {
                         handleWarning: customHandleWarning,
                         mapDynamicRoutes: {},
                     });

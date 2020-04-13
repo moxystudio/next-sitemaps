@@ -1,6 +1,6 @@
 'use strict';
 
-const { replace } = require('./utils');
+const replace = require('./replace');
 
 const previousMatchedReplacements = {};
 const unmappedEntries = [];
