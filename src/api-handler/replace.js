@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Replaces dynamic routes for real values.
  *
@@ -11,7 +9,7 @@
  * @param {object} options.previousMatchedReplacements - An object containing all the previous mapped routes.
  * @returns {Array<string>} - Returns mapped routes.
  */
-module.exports = function (options = {}) {
+const replace = (options = {}) => {
     const {
         fullEntry,
         entryToBeReplaced,
@@ -55,3 +53,5 @@ module.exports = function (options = {}) {
 
     return replacedGroups.fullMap;
 };
+
+export default replace;

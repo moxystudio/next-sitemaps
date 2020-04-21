@@ -1,10 +1,8 @@
-'use strict';
+import Boom from '@hapi/boom';
+import generateSitemapFromEntries from './generate';
+import handleDynamicRoutesMapping from './mapping';
 
-const Boom = require('@hapi/boom');
-const generateSitemapFromEntries = require('./generate');
-const handleDynamicRoutesMapping = require('./mapping');
-
-const handleErrorDefault = (err) => {
+const logErrorDefault = (err) => {
     // Only log internal server errors
     if (!err.isServer) {
         return;
@@ -18,7 +16,7 @@ const handleErrorDefault = (err) => {
     console.error(err.stack);
 };
 
-const handleWarningDefault = (message) => console.warn(message);
+const logWarningDefault = (message) => console.warn(message);
 
 const sendError = (res, err) => {
     const { output } = err;
@@ -29,14 +27,14 @@ const sendError = (res, err) => {
     res.status(statusCode).json(payload);
 };
 
-const createSitemap = async ({ baseUrl, mapDynamicRoutes, handleWarning }) => {
-    const sitemapEntries = global.__NEXT_ROUTES__;
-
-    if (!sitemapEntries) {
-        throw new Error('There are no entries to map. You might want to check the __NEXT_ROUTES__ global variable.');
+const createSitemap = async ({ baseUrl, mapDynamicRoutes, logWarning }) => {
+    if (!global.__NEXT_ROUTES__) {
+        throw new Error('There are no entries to map. Did you forget to enable the plugin in the next.config.js file?');
     }
 
-    const mappedEntries = await handleDynamicRoutesMapping(sitemapEntries, { handleWarning, mapDynamicRoutes });
+    const sitemapEntries = global.__NEXT_ROUTES__.split(',');
+
+    const mappedEntries = await handleDynamicRoutesMapping(sitemapEntries, { logWarning, mapDynamicRoutes });
     const sitemapXml = generateSitemapFromEntries(mappedEntries, { baseUrl });
 
     return sitemapXml;
@@ -48,16 +46,16 @@ const createSitemap = async ({ baseUrl, mapDynamicRoutes, handleWarning }) => {
  * @param {object} options - The options.
  * @param {string} options.baseUrl - The website url to join on each entry.
  * @param {object<string, Function>} options.mapDynamicRoutes - An object containing information of how to map a certain dynamic route.
- * @param {Function} options.handleWarning - A function to be called whenever an entry is not mapped.
- * @param {Function} options.handleError - A function to be called whenever an error occurs.
+ * @param {Function} options.logWarning - A function to be called whenever an entry is not mapped.
+ * @param {Function} options.logError - A function to be called whenever an error occurs.
  * @returns {Function} The API handler.
  */
-module.exports = (options) => {
+const createSitemapApiHandler = (options) => {
     options = {
         baseUrl: '/',
         mapDynamicRoutes: {},
-        handleWarning: handleWarningDefault,
-        handleError: handleErrorDefault,
+        logWarning: logWarningDefault,
+        logError: logErrorDefault,
         ...options,
     };
 
@@ -76,8 +74,10 @@ module.exports = (options) => {
                 err = Boom.internal(undefined, { originalError: err });
             }
 
-            options.handleError(err);
+            options.logError(err);
             sendError(res, err);
         }
     };
 };
+
+export default createSitemapApiHandler;

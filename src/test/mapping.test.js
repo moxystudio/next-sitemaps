@@ -1,6 +1,4 @@
-'use strict';
-
-const handleWarningSpy = jest.fn();
+const logWarningSpy = jest.fn();
 let handleDynamicRoutesMapping;
 
 beforeEach(() => {
@@ -14,7 +12,7 @@ describe('When entries are passed', () => {
         const mapDynamicRoutes = {};
 
         const mappedEntries = await handleDynamicRoutesMapping(sitemapEntries, {
-            handleWarning: handleWarningSpy,
+            logWarning: logWarningSpy,
             mapDynamicRoutes,
         });
 
@@ -26,24 +24,24 @@ describe('When entries are passed', () => {
         const mapDynamicRoutes = { '/[id]': () => Promise.reject(new Error('foo')) };
 
         const rejectedHandling = handleDynamicRoutesMapping(sitemapEntries, {
-            handleWarning: handleWarningSpy,
+            logWarning: logWarningSpy,
             mapDynamicRoutes,
         });
 
         await expect(rejectedHandling).rejects.toThrow('foo');
     });
 
-    it('should call handleWarning when there are unmapped entries', async () => {
+    it('should call logWarning when there are unmapped entries', async () => {
         const sitemapEntries = ['/', '/page1', '/[id]'];
         const mapDynamicRoutes = {};
 
         const mappedEntries = await handleDynamicRoutesMapping(sitemapEntries, {
-            handleWarning: handleWarningSpy,
+            logWarning: logWarningSpy,
             mapDynamicRoutes,
         });
 
         expect(mappedEntries).toEqual(['/', '/page1']);
-        expect(handleWarningSpy).toHaveBeenCalledWith('WARNING: There are unmapped dynamic routes:\n/[id]');
+        expect(logWarningSpy).toHaveBeenCalledWith('WARNING: There are unmapped dynamic routes:\n/[id]');
     });
 
     it('should map dynamic entries correctly', async () => {
@@ -53,7 +51,7 @@ describe('When entries are passed', () => {
         };
 
         const mappedEntries = await handleDynamicRoutesMapping(sitemapEntries, {
-            handleWarning: handleWarningSpy,
+            logWarning: logWarningSpy,
             mapDynamicRoutes,
         });
 
@@ -74,7 +72,7 @@ describe('When entries are passed', () => {
         };
 
         const mappedEntries = await handleDynamicRoutesMapping(sitemapEntries, {
-            handleWarning: handleWarningSpy,
+            logWarning: logWarningSpy,
             mapDynamicRoutes,
         });
 
@@ -95,7 +93,7 @@ describe('When entries are passed', () => {
         };
 
         const mappedEntries = await handleDynamicRoutesMapping(sitemapEntries, {
-            handleWarning: handleWarningSpy,
+            logWarning: logWarningSpy,
             mapDynamicRoutes,
         });
 
@@ -124,7 +122,7 @@ describe('When entries are passed', () => {
         };
 
         await handleDynamicRoutesMapping(sitemapEntries, {
-            handleWarning: handleWarningSpy,
+            logWarning: logWarningSpy,
             mapDynamicRoutes,
         });
 

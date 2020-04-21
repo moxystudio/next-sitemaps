@@ -1,6 +1,5 @@
-'use strict';
-
-const replace = require('./replace');
+/* eslint-disable no-await-in-loop */
+import replace from './replace';
 
 const previousMatchedReplacements = {};
 const unmappedEntries = [];
@@ -14,7 +13,7 @@ const mappedEntries = [];
  * @param {object<string, Function>} options.mapDynamicRoutes - An object containing information of how to map a certain dynamic route.
  * @returns {Promise<Array>} - Returns a promise that resolves with an array of mapped routes for the specific entry.
  */
-async function mapDynamicRoute(entry, { mapDynamicRoutes }) {
+const mapDynamicRoute = async (entry, { mapDynamicRoutes }) => {
     const dynamicGroups = entry.match(/\[([^\\[\]]+)\]/g);
 
     if (!dynamicGroups) {
@@ -61,10 +60,8 @@ async function mapDynamicRoute(entry, { mapDynamicRoutes }) {
 
     const newMappedEntries = [];
 
-    await previousDynamicResult.reduce(async (prevPromise, result) => {
-        await prevPromise;
-
-        return (async () => {
+    for (const result of previousDynamicResult) {
+        const newEntries = await (async () => {
             const prevDynGroupPaths = previousDynamicGroup.replace(/(\[|\])/g, '').split('/');
             const results = result.split('/');
             const prevMappedValues = prevDynGroupPaths.reduce((acc, prevDynGroupPath, index) => {
@@ -87,39 +84,39 @@ async function mapDynamicRoute(entry, { mapDynamicRoutes }) {
                 previousMatchedReplacements,
             });
 
-            newMappedEntries.push(...newEntries);
+            return newEntries;
         })();
-    }, Promise.resolve());
+
+        newMappedEntries.push(...newEntries);
+    }
 
     return newMappedEntries;
-}
+};
 
 /**
  * Maps the dynamic routes available with the handlers specified in the options.
  *
  * @param {Array<string>} entries - The entries (path) that must be handled. Example: ['/home', '/[page]/id'].
  * @param {object} options - The options that should be used to map and handle warnings.
- * @param {Function} options.handleWarning - A function to be called whenever an entry is not mapped.
+ * @param {Function} options.logWarning - A function to be called whenever an entry is not mapped.
  * @param {object<string, Function>} options.mapDynamicRoutes - An object containing information of how to handle a certain dynamic route.
  * @returns {Promise<Array>} - Returns a promise that resolves with an array of all mapped routes.
  */
-module.exports = async function handleDynamicRoutesMapping(entries, { handleWarning, ...options }) {
-    const lastNewEntries = await entries.reduce(async (prevPromise, entry) => {
-        const newEntries = await prevPromise;
+const handleDynamicRoutesMapping = async (entries, { logWarning, ...options }) => {
+    for (const entry of entries) {
+        const newEntries = await mapDynamicRoute(entry, options);
 
         newEntries && mappedEntries.push(...newEntries);
-
-        return mapDynamicRoute(entry, options);
-    }, Promise.resolve());
-
-    lastNewEntries && mappedEntries.push(...lastNewEntries);
+    }
 
     if (unmappedEntries.length) {
         const warningMessage = unmappedEntries.reduce((acc, unmappedEntry) => acc.concat(`\n${unmappedEntry}`),
             'WARNING: There are unmapped dynamic routes:');
 
-        handleWarning(warningMessage);
+        logWarning(warningMessage);
     }
 
     return mappedEntries;
 };
+
+export default handleDynamicRoutesMapping;

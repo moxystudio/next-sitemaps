@@ -1,10 +1,8 @@
-'use strict';
-
-const request = require('supertest');
-const { apiResolver } = require('next/dist/next-server/server/api-utils');
-const setupSitemap = require('../api-handler');
-const handleDynamicRoutesMapping = require('../api-handler/mapping');
-const generateSitemapFromEntries = require('../api-handler/generate');
+import request from 'supertest';
+import { apiResolver } from 'next/dist/next-server/server/api-utils';
+import createSitemapApiHandler from '../api-handler';
+import handleDynamicRoutesMapping from '../api-handler/mapping';
+import generateSitemapFromEntries from '../api-handler/generate';
 
 jest.mock('../api-handler/mapping', () => jest.fn());
 jest.mock('../api-handler/generate', () => jest.fn());
@@ -13,7 +11,7 @@ const enhance = (handler) => (req, res) => apiResolver(req, res, undefined, hand
 const mockedSitemapXml = 'sitemap-xml';
 
 beforeEach(() => {
-    global.__NEXT_ROUTES__ = [];
+    global.__NEXT_ROUTES__ = '[]';
     console.error.mock && console.error.mockRestore();
     console.warn.mock && console.warn.mockRestore();
 });
@@ -22,7 +20,7 @@ describe('When method is supported', () => {
     it('should respond what generateSitemapFromEntries returns', async () => {
         generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
 
-        const handler = setupSitemap();
+        const handler = createSitemapApiHandler();
 
         await request(enhance(handler))
             .get('/')
@@ -39,7 +37,7 @@ describe('When method is supported', () => {
         handleDynamicRoutesMapping.mockReturnValue(mockedSitemapEntries);
         generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
 
-        const handler = setupSitemap();
+        const handler = createSitemapApiHandler();
 
         await request(enhance(handler))
             .get('/')
@@ -57,7 +55,7 @@ describe('When method is supported', () => {
         jest.spyOn(console, 'error').mockImplementation();
         handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
 
-        const handler = setupSitemap();
+        const handler = createSitemapApiHandler();
 
         await request(enhance(handler))
             .get('/')
@@ -76,14 +74,14 @@ describe('When method is supported', () => {
         jest.spyOn(console, 'error').mockImplementation();
         delete global.__NEXT_ROUTES__;
 
-        const handler = setupSitemap();
+        const handler = createSitemapApiHandler();
 
         await request(enhance(handler))
             .get('/')
             .expect('Content-Type', /^application\/json/)
             .expect(500)
             .then((res) => {
-                expect(console.error.mock.calls[0][0]).toMatch('Error: There are no entries to map. You might want to check the __NEXT_ROUTES__ global variable.'); // eslint-disable-line max-len
+                expect(console.error.mock.calls[0][0]).toMatch('There are no entries to map. Did you forget to enable the plugin in the next.config.js file?'); // eslint-disable-line max-len
                 expect(res.body).toEqual({
                     statusCode: 500,
                     error: 'Internal Server Error',
@@ -96,7 +94,7 @@ describe('When method is supported', () => {
         jest.spyOn(console, 'error').mockImplementation();
         handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
 
-        const handler = setupSitemap();
+        const handler = createSitemapApiHandler();
 
         await request(enhance(handler))
             .get('/')
@@ -116,7 +114,7 @@ describe('When method is supported', () => {
             handleDynamicRoutesMapping.mockReturnValue(mockedSitemapEntries);
             generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
 
-            const handler = setupSitemap({ baseUrl: customBaseUrl });
+            const handler = createSitemapApiHandler({ baseUrl: customBaseUrl });
 
             await request(enhance(handler))
                 .get('/')
@@ -128,45 +126,45 @@ describe('When method is supported', () => {
                 });
         });
 
-        it('should allow passing a custom handleError', async () => {
+        it('should allow passing a custom logError', async () => {
             jest.spyOn(console, 'warn').mockImplementation();
 
-            const customHandleError = jest.fn((err) => {
+            const customLogError = jest.fn((err) => {
                 console.warn(`This error message is ${err.data.originalError.message}`);
             });
 
             handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
 
-            const handler = setupSitemap({ handleError: customHandleError });
+            const handler = createSitemapApiHandler({ logError: customLogError });
 
             await request(enhance(handler))
                 .get('/')
                 .expect('Content-Type', /^application\/json/)
                 .expect(500)
                 .then(() => {
-                    expect(customHandleError).toHaveBeenCalledTimes(1);
+                    expect(customLogError).toHaveBeenCalledTimes(1);
                     expect(console.warn).toHaveBeenCalledTimes(1);
                     expect(console.warn.mock.calls[0][0]).toEqual('This error message is foo');
                 });
         });
 
-        it('should allow passing a custom handleWarning', async () => {
+        it('should allow passing a custom logWarning', async () => {
             const routes = ['/page1'];
 
-            global.__NEXT_ROUTES__ = routes;
+            global.__NEXT_ROUTES__ = routes.toString();
             handleDynamicRoutesMapping.mockReturnValue(routes);
             generateSitemapFromEntries.mockReturnValue(routes);
 
-            const customHandleWarning = jest.fn();
+            const customLogWarning = jest.fn();
 
-            const handler = setupSitemap({ handleWarning: customHandleWarning });
+            const handler = createSitemapApiHandler({ logWarning: customLogWarning });
 
             await request(enhance(handler))
                 .get('/')
                 .expect(200)
                 .then(() => {
                     expect(handleDynamicRoutesMapping).toHaveBeenCalledWith(routes, {
-                        handleWarning: customHandleWarning,
+                        logWarning: customLogWarning,
                         mapDynamicRoutes: {},
                     });
                 });
@@ -178,7 +176,7 @@ describe('When method is not supported', () => {
     it('should respond with 405', async () => {
         generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
 
-        const handler = setupSitemap();
+        const handler = createSitemapApiHandler();
 
         await request(enhance(handler))
             .post('/')

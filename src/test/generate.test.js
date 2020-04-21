@@ -1,6 +1,4 @@
-'use strict';
-
-const generateSitemapFromEntries = require('../api-handler/generate');
+import generateSitemapFromEntries from '../api-handler/generate';
 
 const baseXML = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">';
 
