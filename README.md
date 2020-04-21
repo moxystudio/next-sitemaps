@@ -51,7 +51,7 @@ Sitemap: https://moxy.studio/api/sitemap
 User-agent:*
 Disallow:
 
-...
+# ...
 ```
 
 > ℹ️ Please note that Sitemap URL must be an absolute URL.
@@ -87,14 +87,14 @@ An object that indicates the possible values for each dynamic route. [More info]
 ##### logWarning
 
 Type: `function`    
-Default: see `*logWarningDefault*` in [src/api-handler/index.js](./src/api-handler/index.js)
+Default: see `logWarningDefault` in [src/api-handler/index.js](./src/api-handler/index.js)
 
 A function that handle possible warnings. It has the following signature: `(message) => {}`. [More info](#specifying-a-custom-warning-function).
 
 ##### logError
 
 Type: `function`    
-Default: see `*logErrorDefault*` in [src/api-handler/index.js](./src/api-handler/index.js)
+Default: see `logErrorDefault` in [src/api-handler/index.js](./src/api-handler/index.js)
 
 A function that handle possible errors. It has the following signature: `(err) => {}`. [More info](#specifying-a-custom-error-function).
 
