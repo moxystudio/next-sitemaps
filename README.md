@@ -25,9 +25,9 @@ npm install @moxy/next-sitemaps
 const withSitemap = require('@moxy/next-sitemaps/plugin');
 
 withPlugins([
-    //other plugins..
+    // other plugins..
     withSitemap()
-    //other plugins...
+    // other plugins...
 ]);
 ```
 
@@ -54,7 +54,7 @@ Disallow:
 # ...
 ```
 
-> ℹ️ Please note that Sitemap URL must be an absolute URL.
+ℹ️ Please note that Sitemap URL must be an absolute URL.
 
 ## API
 
@@ -128,10 +128,10 @@ The API route above would respond with the following XML:
         <loc>https://moxy.studio/another-project</loc>
     </url>
     <url>
-		<loc>https://moxy.studio/some-project</loc>
+        <loc>https://moxy.studio/some-project</loc>
     </url>
     <url>
-		<loc>https://moxy.studio/old/old-post</loc>
+        <loc>https://moxy.studio/old/old-post</loc>
     </url>
     <url>
         <loc>https://moxy.studio/old/ancient-post</loc>
@@ -175,13 +175,13 @@ Assuming that fetchCompanyApps returns `vscode` and `vsstudio` for Microsoft and
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-		<loc>https://app-finder.blabla/apple</loc>
+        <loc>https://app-finder.blabla/apple</loc>
     </url>
     <url>
         <loc>https://app-finder.blabla/apple/itunes</loc>
     </url>
     <url>
-		<loc>https://app-finder.blabla/microsoft</loc>
+        <loc>https://app-finder.blabla/microsoft</loc>
     </url>
     <url>
         <loc>https://app-finder.blabla/microsoft/vscode</loc>
