@@ -1,0 +1,65 @@
+{
+  "name": "next-sitemaps",
+  "version": "1.0.0",
+  "description": "Library to generate sitemaps in a next application",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "es",
+    "plugin.js"
+  ],
+  "scripts": {
+    "lint": "eslint . --ignore-path .gitignore",
+    "test": "jest",
+    "build:commonjs": "BABEL_ENV=commonjs babel src -d lib --delete-dir-on-start",
+    "build:es": "BABEL_ENV=es babel src -d es --delete-dir-on-start",
+    "build": "npm run build:commonjs && npm run build:es",
+    "prerelease": "npm t && npm run lint && npm run build",
+    "release": "standard-version",
+    "postrelease": "git push --follow-tags origin master && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moxystudio/next-sitemaps-plugin.git"
+  },
+  "keywords": [
+    "create-next-sitemaps",
+    "nextjs",
+    "routes",
+    "next-sitemaps"
+  ],
+  "author": "Pedro Santos <pedro.santos@moxy.studio>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/moxystudio/next-sitemaps-plugin/issues"
+  },
+  "homepage": "https://github.com/moxystudio/next-sitemaps-plugin#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@commitlint/config-conventional": "^8.1.0",
+    "@moxy/babel-preset": "^3.2.5",
+    "@moxy/eslint-config-babel": "^12.0.1",
+    "@moxy/eslint-config-base": "^12.0.1",
+    "@moxy/eslint-config-jest": "^12.0.1",
+    "@moxy/jest-config": "^2.1.0",
+    "commitlint": "^8.3.5",
+    "eslint": "^6.8.0",
+    "husky": "^4.2.3",
+    "jest": "^25.1.0",
+    "lint-staged": "^10.0.8",
+    "next": "^9.3.5",
+    "react": "^16.13.1",
+    "standard-version": "^7.1.0",
+    "supertest": "^4.0.2"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0",
+    "next": ">=8 <=9"
+  },
+  "dependencies": {
+    "@hapi/boom": "^9.1.0",
+    "glob": "^7.1.6",
+    "webpack-sources": "^1.4.3"
+  }
+}
