@@ -2,10 +2,10 @@
 
 [![Build Status][travis-image]][travis-url] [![Coverage Status][codecov-image]][codecov-url]
 
-[travis-url]:https://travis-ci.org/moxystudio/next-sitemaps-plugin
-[travis-image]:https://img.shields.io/travis/moxystudio/next-sitemaps-plugin/master.svg
-[codecov-url]:https://codecov.io/gh/moxystudio/next-sitemaps-plugin
-[codecov-image]:https://img.shields.io/codecov/c/github/moxystudio/next-sitemaps-plugin/master.svg
+[travis-url]:https://travis-ci.org/moxystudio/next-sitemaps
+[travis-image]:https://img.shields.io/travis/moxystudio/next-sitemaps/master.svg
+[codecov-url]:https://codecov.io/gh/moxystudio/next-sitemaps
+[codecov-image]:https://img.shields.io/codecov/c/github/moxystudio/next-sitemaps/master.svg
 
 This module provides an API handler and a plugin that enables your Next.js application to have working sitemaps so that search engine crawlers can index all your pages.
 
