@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { apiResolver } from 'next/dist/next-server/server/api-utils';
-import createSitemapApiHandler from '../api-handler';
-import handleDynamicRoutesMapping from '../api-handler/mapping';
-import generateSitemapFromEntries from '../api-handler/generate';
+import handleDynamicRoutesMapping from './mapping';
+import generateSitemapFromEntries from './generate';
+import createSitemapApiHandler from '.';
 
 jest.mock('../api-handler/mapping', () => jest.fn());
 jest.mock('../api-handler/generate', () => jest.fn());

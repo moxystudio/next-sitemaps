@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import glob from 'glob';
 import { ConcatSource } from 'webpack-sources';
 

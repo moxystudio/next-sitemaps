@@ -6,7 +6,10 @@
   "files": [
     "lib",
     "es",
-    "plugin.js"
+    "plugin.js",
+    "!**/*.test.js",
+    "!**/__snapshots__",
+    "!**/__mocks__"
   ],
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",

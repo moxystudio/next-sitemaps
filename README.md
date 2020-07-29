@@ -18,7 +18,7 @@ This module provides an API handler and a plugin that enables your Next.js appli
 
 ## Installation
 
-```cmd
+```sh
 npm install @moxy/next-sitemaps
 ```
 

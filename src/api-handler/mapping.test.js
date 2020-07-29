@@ -3,7 +3,7 @@ let handleDynamicRoutesMapping;
 
 beforeEach(() => {
     jest.resetModules();
-    handleDynamicRoutesMapping = require('../api-handler/mapping');
+    handleDynamicRoutesMapping = require('./mapping');
 });
 
 describe('When entries are passed', () => {
