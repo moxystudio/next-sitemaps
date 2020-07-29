@@ -4,13 +4,6 @@ import glob from 'glob';
 import { ConcatSource } from 'webpack-sources';
 
 class NextSitemapWebpackPlugin {
-    /**
-     * Matches all files and directories inside the next's pages folder and maps them into urls.
-     * These urls will be available through a global named __NEXT_ROUTES__.
-     * The api folder and the template pages (_document, _error, etc) are ignored.
-     *
-     * @param {object} compiler - Webpack compiler.
-     */
     apply(compiler) {
         compiler.hooks.emit.tapPromise('NextSitemapPlugin', async (compilation) => {
             const diskRoutes = glob.sync('pages/**/*.js', { ignore: ['pages/api/**', 'pages/_*.js'] });

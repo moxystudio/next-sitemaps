@@ -34,7 +34,7 @@ const withSitemap = require('@moxy/next-sitemaps/plugin');
 
 withPlugins([
     // other plugins..
-    withSitemap,
+    withSitemap(),
     // other plugins...
 ]);
 ```
