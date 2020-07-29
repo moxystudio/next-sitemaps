@@ -1,5 +1,5 @@
 'use strict';
 
-const { baseConfig } = require('@moxy/jest-config');
+const { baseConfig } = require('@moxy/jest-config-base');
 
-module.exports = baseConfig();
+module.exports = baseConfig('node');

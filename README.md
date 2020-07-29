@@ -1,11 +1,18 @@
 # next-sitemaps
 
-[![Build Status][travis-image]][travis-url] [![Coverage Status][codecov-image]][codecov-url]
+[![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][build-status-image]][build-status-url] [![Coverage Status][codecov-image]][codecov-url] [![Dependency status][david-dm-image]][david-dm-url] [![Dev Dependency status][david-dm-dev-image]][david-dm-dev-url]
 
-[travis-url]:https://travis-ci.org/moxystudio/next-sitemaps
-[travis-image]:https://img.shields.io/travis/moxystudio/next-sitemaps/master.svg
+[npm-url]:https://npmjs.org/package/@moxy/next-sitemaps
+[downloads-image]:https://img.shields.io/npm/dm/@moxy/next-sitemaps.svg
+[npm-image]:https://img.shields.io/npm/v/@moxy/next-sitemaps.svg
+[build-status-url]:https://github.com/moxystudio/next-sitemaps/actions
+[build-status-image]:https://img.shields.io/github/workflow/status/moxystudio/next-sitemaps/Node%20CI/master
 [codecov-url]:https://codecov.io/gh/moxystudio/next-sitemaps
 [codecov-image]:https://img.shields.io/codecov/c/github/moxystudio/next-sitemaps/master.svg
+[david-dm-url]:https://david-dm.org/moxystudio/next-sitemaps
+[david-dm-image]:https://img.shields.io/david/moxystudio/next-sitemaps.svg
+[david-dm-dev-url]:https://david-dm.org/moxystudio/next-sitemaps?type=dev
+[david-dm-dev-image]:https://img.shields.io/david/dev/moxystudio/next-sitemaps.svg
 
 This module provides an API handler and a plugin that enables your Next.js application to have working sitemaps so that search engine crawlers can index all your pages.
 
