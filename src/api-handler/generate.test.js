@@ -2,7 +2,7 @@ import generateSitemapFromEntries from './generate';
 
 const baseXML = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">';
 
-describe('When entries are passed', () => {
+describe('when entries are passed', () => {
     it('should create the xml successfully based on the passed entries', () => {
         const sitemap = generateSitemapFromEntries(['/', '/another-entry'], { baseUrl: 'https://batatas.com' });
 
@@ -23,7 +23,7 @@ ${baseXML}
     });
 });
 
-describe('When entries are not passed', () => {
+describe('when entries are not passed', () => {
     it('should throw an error', () => {
         const noEntriesGeneration = () => generateSitemapFromEntries(undefined, { baseUrl: '/' });
 

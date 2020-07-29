@@ -1,12 +1,12 @@
-import replace from '../api-handler/replace';
+import replace from './replace';
 
-describe('When the required params are not passed', () => {
+describe('when the required params are not passed', () => {
     it('should return an empty array', () => {
         expect(replace()).toEqual([]);
     });
 });
 
-describe('When the required params are passed', () => {
+describe('when the required params are passed', () => {
     it('should return correctly the mapped routes and add info to previousMatchedReplacements object', () => {
         const previousMatchedReplacements = {};
         const options = {

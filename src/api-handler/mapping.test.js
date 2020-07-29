@@ -6,7 +6,7 @@ beforeEach(() => {
     handleDynamicRoutesMapping = require('./mapping');
 });
 
-describe('When entries are passed', () => {
+describe('when entries are passed', () => {
     it('should map static entries correctly', async () => {
         const sitemapEntries = ['/', '/page1', '/page2'];
         const mapDynamicRoutes = {};

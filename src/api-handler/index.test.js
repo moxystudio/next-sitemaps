@@ -16,7 +16,7 @@ beforeEach(() => {
     console.warn.mock && console.warn.mockRestore();
 });
 
-describe('When method is supported', () => {
+describe('when method is supported', () => {
     it('should respond what generateSitemapFromEntries returns', async () => {
         generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
 
@@ -172,7 +172,7 @@ describe('When method is supported', () => {
     });
 });
 
-describe('When method is not supported', () => {
+describe('when method is not supported', () => {
     it('should respond with 405', async () => {
         generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
 
