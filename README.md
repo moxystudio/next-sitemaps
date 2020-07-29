@@ -80,14 +80,14 @@ Type: `object`
 
 ##### baseUrl
 
-Type: `string`  
+Type: `string`   
 Default: `'/'`
 
 The website base URL, which will be used to prefix all page pathnames. Please check [Specifying the base URL](#specifying-the-base-url) for more info.
 
 ##### mapDynamicRoutes
 
-Type: `object`  
+Type: `object`   
 Default: `{}`
 
 An object that indicates the possible values for each dynamic route. [More info](#handling-dynamic-routing).
