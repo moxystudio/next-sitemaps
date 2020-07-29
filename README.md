@@ -22,11 +22,12 @@ npm install @moxy/next-sitemaps
 **1. Add the plugin to `next.config.js`**
 
 ```js
+const withPlugins = require('next-compose-plugins');
 const withSitemap = require('@moxy/next-sitemaps/plugin');
 
 withPlugins([
     // other plugins..
-    withSitemap()
+    withSitemap,
     // other plugins...
 ]);
 ```
