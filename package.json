@@ -40,20 +40,21 @@
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
-    "@commitlint/config-conventional": "^8.1.0",
+    "@commitlint/config-conventional": "^9.1.1",
     "@moxy/babel-preset": "^3.2.5",
     "@moxy/eslint-config-babel": "^12.0.1",
     "@moxy/eslint-config-base": "^12.0.1",
     "@moxy/eslint-config-jest": "^12.0.1",
     "@moxy/jest-config-base": "^5.0.0",
-    "commitlint": "^8.3.5",
+    "commitlint": "^9.1.0",
     "eslint": "^6.8.0",
     "husky": "^4.2.3",
-    "jest": "^25.1.0",
+    "jest": "^26.1.0",
     "lint-staged": "^10.0.8",
     "next": "^9.3.5",
     "react": "^16.13.1",
-    "standard-version": "^7.1.0",
+    "react-dom": "^16.13.1",
+    "standard-version": "^8.0.2",
     "supertest": "^4.0.2"
   },
   "peerDependencies": {
@@ -63,6 +64,8 @@
   "dependencies": {
     "@hapi/boom": "^9.1.0",
     "glob": "^7.1.6",
+    "mem": "^6.1.0",
+    "proper-url-join": "^2.1.1",
     "webpack-sources": "^1.4.3"
   }
 }
