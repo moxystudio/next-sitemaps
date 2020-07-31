@@ -6,17 +6,11 @@ import { ConcatSource } from 'webpack-sources';
 class NextSitemapWebpackPlugin {
     apply(compiler) {
         compiler.hooks.emit.tapPromise('NextSitemapPlugin', async (compilation) => {
-            const diskRoutes = glob.sync('pages/**/*.js', { ignore: ['pages/api/**', 'pages/_*.js'] });
+            const diskRoutes = glob.sync('pages/**/*.@(js|jsx|mjs|ts|tsx)', { ignore: ['pages/api/**', 'pages/_*'] });
 
-            if (diskRoutes.length === 0) {
-                throw new Error('\'pages/\' directory is empty');
-            }
-
-            const routes = diskRoutes.map((diskRoute) => {
-                const route = diskRoute.replace(/^pages/, '').replace(/.js$/, '');
-
-                return route.replace('index', '');
-            }).sort().reverse();
+            // Remove page/ prefix, extension suffix and finally /index suffix as well.
+            const routes = diskRoutes.map((diskRoute) =>
+                diskRoute.replace(/^pages/, '').replace(/\.[^\\/.]+$/, '').replace(/\/index$/, ''));
 
             compilation.chunks
                 .filter((chunk) => chunk.canBeInitial())
@@ -26,7 +20,7 @@ class NextSitemapWebpackPlugin {
                     return files;
                 }, [])
                 .forEach((file) => {
-                    const nextRoutes = `__NEXT_ROUTES__ = "${routes}";`;
+                    const nextRoutes = `__NEXT_ROUTES__ = "${JSON.stringify(routes)}";`;
 
                     compilation.assets[file] = new ConcatSource(nextRoutes, compilation.assets[file]);
                 });

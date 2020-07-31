@@ -39,13 +39,12 @@ withPlugins([
 ]);
 ```
 
-**2. Add the API handler on `pages/api/sitemap.js`**
+**2. Add the API handler on `pages/api/sitemap.xml.js`**
 
 ```js
 import createSitemapApiHandler from '@moxy/next-sitemaps';
 
-export default createSitemapApiHandler({
-    baseUrl: 'https://moxy.studio',
+export default createSitemapApiHandler('https://moxy.studio', {
     mapDynamicRoutes: {
         '/[id]': () => ['id1', 'id2'],
     },
@@ -55,14 +54,14 @@ export default createSitemapApiHandler({
 **3. Add the endpoint URL to your project's robots.txt file**
 
 ```txt
-Sitemap: https://moxy.studio/api/sitemap
+Sitemap: https://moxy.studio/api/sitemap.xml
 User-agent:*
 Disallow:
 
 # ...
 ```
 
-ℹ️ Please note that Sitemap URL must be an absolute URL.
+> ℹ️ Please note that Sitemap URL must be a full absolute URL.
 
 ## API
 
@@ -70,20 +69,20 @@ Disallow:
 
 This plugin will match all files and directories inside the next's `/pages` folder and it will map them into URLs. Those mappings will be injected in a global variable called  `__NEXT_ROUTES__`, which will be picked by the API handler.
 
-### createSitemapApiHandler([options])
+### createSitemapApiHandler(siteUrl, [options])
 
 Defines an API handler that will respond with a valid sitemap XML file containing the website pages.
 
-#### options
-
-Type: `object`
-
-##### baseUrl
+##### siteUrl
 
 Type: `string`   
 Default: `'/'`
 
-The website base URL, which will be used to prefix all page pathnames. Please check [Specifying the base URL](#specifying-the-base-url) for more info.
+The website URL, which will be used to prefix all page URLs.
+
+#### options
+
+Type: `object`
 
 ##### mapDynamicRoutes
 
@@ -92,33 +91,52 @@ Default: `{}`
 
 An object that indicates the possible values for each dynamic route. [More info](#handling-dynamic-routing).
 
+##### cacheControl
+
+Type: `string`   
+Default: `public, max-age=3600` (max-age is set to 0 if not in production)
+
+A string defining the [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control) header for HTTP responses. Since sitemaps can be rather expensive to generate, you may leverage a [Reverse Proxy](https://en.wikipedia.org/wiki/Reverse_proxy) cache or a pull CDN such as [CloudFlare](https://www.cloudflare.com/) (via a page rule), to cache the sitemap response.
+
+While a reverse-proxy or pull CDN is preferable, you may cache the sitemap programmatically like so:
+
+```js
+import pMemoize from 'p-memoize';
+import createSitemapApiHandler from '@moxy/next-sitemaps';
+
+const apiHandler = createSitemapApiHandler('https://moxy.studio', {
+    mapDynamicRoutes: {
+        '/[id]': () => ['id1', 'id2'],
+    },
+});
+
+export default pMemoize(apiHandler, {
+    cacheKey: () => 'sitemap',
+    cachePromiseRejection: true,
+    maxAge: 5 * 60 * 1000, // 5 minutes
+});
+```
+
+The example above uses [`p-memoize`](https://github.com/sindresorhus/p-memoize), which caches the result in-memory for `5 minutes`. However, you can use a distributed cache, such as Redis.
+
 ##### logWarning
 
 Type: `function`    
 Default: see `logWarningDefault` in [src/api-handler/index.js](./src/api-handler/index.js)
 
-A function that handle possible warnings. It has the following signature: `(message) => {}`. [More info](#specifying-a-custom-warning-function).
+A function to log possible warnings. It has the following signature: `(message) => {}`.
 
 ##### logError
 
 Type: `function`    
 Default: see `logErrorDefault` in [src/api-handler/index.js](./src/api-handler/index.js)
 
-A function that handle possible errors. It has the following signature: `(err) => {}`. [More info](#specifying-a-custom-error-function).
-
-### Specifying the base url
-
-```js
-createSitemapApiHandler({
-    baseUrl: 'https://moxy.studio'
-});
-```
+A function to log possible errors. It has the following signature: `(err) => {}`.
 
 ### Handling dynamic routing
 
 ```js
-createSitemapApiHandler({
-    baseUrl: 'https://moxy.studio',
+createSitemapApiHandler('https://moxy.studio', {
     mapDynamicRoutes: {
         '/[project]': () => ['some-project', 'another-project'],
         '/old/[post]': () => ['old-post', 'ancient-post'],
@@ -131,7 +149,7 @@ The API route above would respond with the following XML:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://moxy.studio/another-project</loc>
     </url>
@@ -153,23 +171,22 @@ The API route above would respond with the following XML:
 </urlset>
 ```
 
-### Chained dynamic routing
+> ℹ️ [Catch all](https://nextjs.org/docs/routing/dynamic-routes#catch-all-routes) routes are also supported.
 
-There's also the option of chaining dynamic routes.
-
-This works with pattern matching, and you also receive the previously generated results to assist your mappings.
+You might have routes with several dynamic placeholders. In this case, first-level mappers will be called first, second-level mappers will be called secondly, one time for each result of the first mapper, and so on. In short, calls to mappers are permuted and they receive the current iteration values to aid you in data-fetching.
 
 ```js
-createSitemapApiHandler({
-    baseUrl: 'https://app-finder.blabla',
+createSitemapApiHandler('https://moxy.studio', {
     mapDynamicRoutes: {
         '/[company]': async () => {
             const companies = await fetchCompanies(); // returns ['microsoft', 'apple']
 
             return companies;
         },
+        // The function below will be called two times.
+        // The first will have `company` set microsoft and the second one will have it set to `apple`.
         '/[company]/[apps]': ({ company }) => {
-            const apps = fetchCompanyApps(company); // Returns ['vscode', 'vsstudio'] for microsoft and returns ['itunes'] for apple
+            const apps = fetchCompanyApps(company); // returns ['vscode', 'vsstudio'] for microsoft and returns ['itunes'] for apple
 
             return apps;
         },
@@ -177,25 +194,25 @@ createSitemapApiHandler({
 });
 ```
 
-Assuming that fetchCompanyApps returns `vscode` and `vsstudio` for Microsoft and `itunes` for Apple, the API route above would respond with the following XML:
+Assuming the return values of the mappers above, the generated sitemap would look like:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://app-finder.blabla/apple</loc>
+        <loc>https://moxy.studio/apple</loc>
     </url>
     <url>
-        <loc>https://app-finder.blabla/apple/itunes</loc>
+        <loc>https://moxy.studio/apple/itunes</loc>
     </url>
     <url>
-        <loc>https://app-finder.blabla/microsoft</loc>
+        <loc>https://moxy.studio/microsoft</loc>
     </url>
     <url>
-        <loc>https://app-finder.blabla/microsoft/vscode</loc>
+        <loc>https://moxy.studio/microsoft/vscode</loc>
     </url>
     <url>
-        <loc>https://app-finder.blabla/microsoft/vsstudio</loc>
+        <loc>https://moxy.studio/microsoft/vsstudio</loc>
     </url>
 </urlset>
 ```

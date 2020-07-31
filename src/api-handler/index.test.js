@@ -1,194 +1,179 @@
 import request from 'supertest';
 import { apiResolver } from 'next/dist/next-server/server/api-utils';
-import handleDynamicRoutesMapping from './mapping';
-import generateSitemapFromEntries from './generate';
 import createSitemapApiHandler from '.';
 
-jest.mock('../api-handler/mapping', () => jest.fn());
-jest.mock('../api-handler/generate', () => jest.fn());
-
 const enhance = (handler) => (req, res) => apiResolver(req, res, undefined, handler);
-const mockedSitemapXml = 'sitemap-xml';
 
 beforeEach(() => {
-    global.__NEXT_ROUTES__ = '[]';
-    console.error.mock && console.error.mockRestore();
-    console.warn.mock && console.warn.mockRestore();
+    global.__NEXT_ROUTES__ = '["/foo","/bar"]';
+    process.env.NODE_ENV = 'test';
+    jest.clearAllMocks();
 });
 
-describe('when method is supported', () => {
-    it('should respond what generateSitemapFromEntries returns', async () => {
-        generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
+it('should respond with the correct XML', async () => {
+    const handler = createSitemapApiHandler('https://my-site.com');
 
-        const handler = createSitemapApiHandler();
+    const response = await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', 'application/xml')
+        .expect(200);
 
-        await request(enhance(handler))
-            .get('/')
-            .expect('Content-Type', 'application/xml')
-            .expect(200)
-            .then((res) => {
-                expect(res.text).toEqual(mockedSitemapXml);
-            });
+    const expectedSitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://my-site.com/bar</loc></url>
+<url><loc>https://my-site.com/foo</loc></url>
+</urlset>`;
+
+    expect(response.text).toEqual(expectedSitemap);
+});
+
+it('should trim trailing slashes from siteUrl', async () => {
+    global.__NEXT_ROUTES__ = '["/[page]"]';
+
+    const logWarning = jest.fn();
+    const handler = createSitemapApiHandler('https://my-site.com/', {
+        logWarning,
     });
 
-    it('should use the default baseUrl option if no options are passed', async () => {
-        const mockedSitemapEntries = ['/', '/page1', '/page2'];
+    await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', 'application/xml')
+        .expect(200);
 
-        handleDynamicRoutesMapping.mockReturnValue(mockedSitemapEntries);
-        generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
+    expect(logWarning).toHaveBeenCalledTimes(1);
+    expect(logWarning).toHaveBeenNthCalledWith(1, expect.stringContaining('/[page]'));
+});
 
-        const handler = createSitemapApiHandler();
+it('should respond with 500 if any mapper throws', async () => {
+    jest.spyOn(console, 'error').mockImplementation();
+    global.__NEXT_ROUTES__ = '["/[page]"]';
 
-        await request(enhance(handler))
-            .get('/')
-            .expect('Content-Type', 'application/xml')
-            .expect(200)
-            .then((res) => {
-                expect(res.text).toEqual(mockedSitemapXml);
-                expect(generateSitemapFromEntries).toHaveBeenCalledWith(mockedSitemapEntries, {
-                    baseUrl: '/',
-                });
-            });
+    const handler = createSitemapApiHandler('https://my-site.com', {
+        mapDynamicRoutes: {
+            '/[page]': () => Promise.reject(new Error('foo')),
+        },
     });
 
-    it('should respond with 500 if any mapper throws', async () => {
-        jest.spyOn(console, 'error').mockImplementation();
-        handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
+    const response = await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', /^application\/json/)
+        .expect(500);
 
-        const handler = createSitemapApiHandler();
-
-        await request(enhance(handler))
-            .get('/')
-            .expect('Content-Type', /^application\/json/)
-            .expect(500)
-            .then((res) => {
-                expect(res.body).toEqual({
-                    statusCode: 500,
-                    error: 'Internal Server Error',
-                    message: 'An internal server error occurred',
-                });
-            });
+    expect(response.body).toEqual({
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: 'An internal server error occurred',
     });
 
-    it('should respond with 500 if there are no entries to map', async () => {
-        jest.spyOn(console, 'error').mockImplementation();
-        delete global.__NEXT_ROUTES__;
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenNthCalledWith(1, expect.stringContaining('foo'));
+});
 
-        const handler = createSitemapApiHandler();
+it('should respond with the correct default Cache-Control', async () => {
+    let handler = createSitemapApiHandler('https://my-site.com');
 
-        await request(enhance(handler))
-            .get('/')
-            .expect('Content-Type', /^application\/json/)
-            .expect(500)
-            .then((res) => {
-                expect(console.error.mock.calls[0][0]).toMatch('There are no entries to map. Did you forget to enable the plugin in the next.config.js file?'); // eslint-disable-line max-len
-                expect(res.body).toEqual({
-                    statusCode: 500,
-                    error: 'Internal Server Error',
-                    message: 'An internal server error occurred',
-                });
-            });
+    await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', 'application/xml')
+        .expect('Cache-Control', 'public, max-age=0')
+        .expect(200);
+
+    process.env.NODE_ENV = 'production';
+
+    handler = createSitemapApiHandler('https://my-site.com');
+
+    await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', 'application/xml')
+        .expect('Cache-Control', 'public, max-age=3600')
+        .expect(200);
+});
+
+it('should allow overriding Cache-Control', async () => {
+    const handler = createSitemapApiHandler('https://my-site.com', {
+        cacheControl: 'public, max-age=999',
     });
 
-    it('should log 500 errors', async () => {
-        jest.spyOn(console, 'error').mockImplementation();
-        handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
+    await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', 'application/xml')
+        .expect('Cache-Control', 'public, max-age=999')
+        .expect(200);
+});
 
-        const handler = createSitemapApiHandler();
+it('should allow custom logError', async () => {
+    global.__NEXT_ROUTES__ = '["/[page]"]';
 
-        await request(enhance(handler))
-            .get('/')
-            .expect('Content-Type', /^application\/json/)
-            .expect(500)
-            .then(() => {
-                expect(console.error).toHaveBeenCalledTimes(1);
-                expect(console.error.mock.calls[0][0]).toMatch('Error: foo');
-            });
+    const logError = jest.fn();
+    const err = new Error('foo');
+    const handler = createSitemapApiHandler('https://my-site.com', {
+        logError,
+        mapDynamicRoutes: {
+            '/[page]': () => Promise.reject(err),
+        },
     });
 
-    describe('options', () => {
-        it('should allow passing a custom baseUrl', async () => {
-            const customBaseUrl = 'https://foo';
-            const mockedSitemapEntries = ['/', '/page1', '/page2'];
+    await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', /^application\/json/)
+        .expect(500);
 
-            handleDynamicRoutesMapping.mockReturnValue(mockedSitemapEntries);
-            generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
-
-            const handler = createSitemapApiHandler({ baseUrl: customBaseUrl });
-
-            await request(enhance(handler))
-                .get('/')
-                .expect(200)
-                .then(() => {
-                    expect(generateSitemapFromEntries).toHaveBeenCalledWith(mockedSitemapEntries, {
-                        baseUrl: customBaseUrl,
-                    });
-                });
-        });
-
-        it('should allow passing a custom logError', async () => {
-            jest.spyOn(console, 'warn').mockImplementation();
-
-            const customLogError = jest.fn((err) => {
-                console.warn(`This error message is ${err.data.originalError.message}`);
-            });
-
-            handleDynamicRoutesMapping.mockImplementationOnce(() => { throw new Error('foo'); });
-
-            const handler = createSitemapApiHandler({ logError: customLogError });
-
-            await request(enhance(handler))
-                .get('/')
-                .expect('Content-Type', /^application\/json/)
-                .expect(500)
-                .then(() => {
-                    expect(customLogError).toHaveBeenCalledTimes(1);
-                    expect(console.warn).toHaveBeenCalledTimes(1);
-                    expect(console.warn.mock.calls[0][0]).toEqual('This error message is foo');
-                });
-        });
-
-        it('should allow passing a custom logWarning', async () => {
-            const routes = ['/page1'];
-
-            global.__NEXT_ROUTES__ = routes.toString();
-            handleDynamicRoutesMapping.mockReturnValue(routes);
-            generateSitemapFromEntries.mockReturnValue(routes);
-
-            const customLogWarning = jest.fn();
-
-            const handler = createSitemapApiHandler({ logWarning: customLogWarning });
-
-            await request(enhance(handler))
-                .get('/')
-                .expect(200)
-                .then(() => {
-                    expect(handleDynamicRoutesMapping).toHaveBeenCalledWith(routes, {
-                        logWarning: customLogWarning,
-                        mapDynamicRoutes: {},
-                    });
-                });
-        });
+    expect(logError).toHaveBeenCalledTimes(1);
+    expect(logError.mock.calls[0][0]).toMatchObject({
+        data: {
+            originalError: err,
+        },
     });
 });
 
-describe('when method is not supported', () => {
-    it('should respond with 405', async () => {
-        generateSitemapFromEntries.mockReturnValue(mockedSitemapXml);
+it('should allow custom logWarning', async () => {
+    global.__NEXT_ROUTES__ = '["/[page]"]';
 
-        const handler = createSitemapApiHandler();
+    const logWarning = jest.fn();
+    const handler = createSitemapApiHandler('https://my-site.com', {
+        logWarning,
+    });
 
-        await request(enhance(handler))
-            .post('/')
-            .expect(405)
-            .then((res) => {
-                expect(res.body).toEqual({
-                    statusCode: 405,
-                    error: 'Method Not Allowed',
-                    message: 'Method POST is not supported for this endpoint',
-                });
-                // Response must include an Allow header
-                expect(res.headers.allow).toEqual('GET');
-            });
+    await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', 'application/xml')
+        .expect(200);
+
+    expect(logWarning).toHaveBeenCalledTimes(1);
+    expect(logWarning).toHaveBeenNthCalledWith(1, expect.stringContaining('/[page]'));
+});
+
+it('should respond with 405 on unsupported HTTP methods', async () => {
+    const handler = createSitemapApiHandler('https://my-site.com');
+
+    const response = await request(enhance(handler))
+        .post('/')
+        .expect('Content-Type', /^application\/json/)
+        .expect(405);
+
+    expect(response.body).toEqual({
+        statusCode: 405,
+        error: 'Method Not Allowed',
+        message: 'Method POST is not supported for this endpoint',
+    });
+
+    // Response must include an Allow header
+    expect(response.headers.allow).toEqual('GET');
+});
+
+it('should fail if plugin is not enabled', async () => {
+    delete global.__NEXT_ROUTES__;
+
+    const handler = createSitemapApiHandler('https://my-site.com');
+
+    const response = await request(enhance(handler))
+        .get('/')
+        .expect('Content-Type', /^application\/json/)
+        .expect(500);
+
+    expect(response.body).toEqual({
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: 'An internal server error occurred',
     });
 });
