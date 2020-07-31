@@ -20,9 +20,9 @@ class NextSitemapWebpackPlugin {
                     return files;
                 }, [])
                 .forEach((file) => {
-                    const nextRoutes = `__NEXT_ROUTES__ = "${JSON.stringify(routes)}";`;
+                    const source = `__NEXT_ROUTES__ = '${JSON.stringify(routes)}';`;
 
-                    compilation.assets[file] = new ConcatSource(nextRoutes, compilation.assets[file]);
+                    compilation.assets[file] = new ConcatSource(source, compilation.assets[file]);
                 });
         });
     }
