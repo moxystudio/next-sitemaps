@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/moxystudio/next-sitemaps-plugin/compare/v1.1.1...v2.0.0) (2020-07-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* baseUrl is now a required parameter and was changed to siteUrl
+* withSitemap -> withSitemap()
+
+### Bug Fixes
+
+* make API consistent with other plugins we have ([9bf81b7](https://github.com/moxystudio/next-sitemaps-plugin/commit/9bf81b750859862f8417547ce30b0cdf0c16c935))
+* rework mapping to fix various issues ([#7](https://github.com/moxystudio/next-sitemaps-plugin/issues/7)) ([3723511](https://github.com/moxystudio/next-sitemaps-plugin/commit/372351141bd05544b5bd693bb3033dda7dd9ed1d))
+
 ### [1.1.1](https://github.com/moxystudio/next-sitemaps-plugin/compare/v1.1.0...v1.1.1) (2020-07-29)
 
 ## 1.1.0 (2020-07-29)
