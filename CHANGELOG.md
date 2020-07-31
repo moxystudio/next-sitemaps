@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.1](https://github.com/moxystudio/next-sitemaps-plugin/compare/v2.0.0...v2.0.1) (2020-07-31)
+
+
+### Bug Fixes
+
+* fix __NEXT_ROUTES__ quotes ([4f2002d](https://github.com/moxystudio/next-sitemaps-plugin/commit/4f2002dd2af00243b07a68ecc71cef0561636b9b))
+
 ## [2.0.0](https://github.com/moxystudio/next-sitemaps-plugin/compare/v1.1.1...v2.0.0) (2020-07-31)
 
 
