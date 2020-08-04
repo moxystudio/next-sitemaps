@@ -39,8 +39,21 @@ it('should call logWarning when there are unmapped routes', async () => {
 
     expect(mappedRoutes).toEqual(['/']);
     expect(logWarningSpy).toHaveBeenCalledTimes(2);
-    expect(logWarningSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('/[page]'));
-    expect(logWarningSpy).toHaveBeenNthCalledWith(2, expect.stringContaining('/page1/[id]'));
+    expect(logWarningSpy).toHaveBeenNthCalledWith(1, 'Unmapped dynamic route: /[page]');
+    expect(logWarningSpy).toHaveBeenNthCalledWith(2, 'Unmapped dynamic route: /page1/[id]');
+});
+
+it('should call logWarning when there are unused routes', async () => {
+    const routes = ['/', '/page1'];
+
+    const mappedRoutes = await mapRoutes(routes, {
+        logWarning: logWarningSpy,
+        mapDynamicRoutes: { '/[id]': () => [] },
+    });
+
+    expect(mappedRoutes).toEqual(['/', '/page1']);
+    expect(logWarningSpy).toHaveBeenCalledTimes(1);
+    expect(logWarningSpy).toHaveBeenNthCalledWith(1, 'Unused dynamic route: /[id]');
 });
 
 it('should map dynamic routes correctly', async () => {

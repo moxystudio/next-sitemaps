@@ -1,5 +1,5 @@
 import urlJoin from 'proper-url-join';
-import mem from 'mem';
+import { memoize, difference } from 'lodash';
 
 const dynamicRouteSegmentRegExp = /^\[((?:\.\.\.)?[^\]]+)\]$/;
 
@@ -64,23 +64,24 @@ const mapRoute = async (route, mapDynamicRoute) => {
 };
 
 const mapRoutes = async (routes, options) => {
-    const unmappedRoutes = new Set();
+    const unmappedRoutesSet = new Set();
+    const usedRoutesSet = new Set();
 
-    const mapDynamicRoute = mem(
+    const mapDynamicRoute = memoize(
         (route, prevDynamicRouteMappings) => {
             const mapDynamicRoute = options.mapDynamicRoutes[route];
 
             if (mapDynamicRoute) {
+                usedRoutesSet.add(route);
+
                 return mapDynamicRoute(prevDynamicRouteMappings) ?? [];
             }
 
-            unmappedRoutes.add(route);
+            unmappedRoutesSet.add(route);
 
             return [];
         },
-        {
-            cacheKey: ([route, prevDynamicRouteMappings]) => `${route}.${JSON.stringify(prevDynamicRouteMappings)}`,
-        },
+        (route, prevDynamicRouteMappings) => `${route}.${JSON.stringify(prevDynamicRouteMappings)}`,
     );
 
     const urls = [];
@@ -92,9 +93,19 @@ const mapRoutes = async (routes, options) => {
         urls.push(...mappedUrls);
     }
 
-    Array.from(unmappedRoutes.values())
+    const unmappedRoutes = Array.from(unmappedRoutesSet.values());
+    const usedRoutes = Array.from(usedRoutesSet.values());
+    const unusedRoutes = difference(Object.keys(options.mapDynamicRoutes), usedRoutes);
+
+    // Log unmapped routes.
+    unmappedRoutes
         .sort()
         .forEach((route) => options.logWarning(`Unmapped dynamic route: ${route}`));
+
+    // Logged unused routes.
+    unusedRoutes
+        .sort()
+        .forEach((route) => options.logWarning(`Unused dynamic route: ${route}`));
 
     return urls.sort();
 };
