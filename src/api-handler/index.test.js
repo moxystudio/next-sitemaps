@@ -5,7 +5,7 @@ import createSitemapApiHandler from '.';
 const enhance = (handler) => (req, res) => apiResolver(req, res, undefined, handler);
 
 beforeEach(() => {
-    global.__NEXT_ROUTES__ = '["/foo","/bar"]';
+    process.env._NEXT_SITEMAPS_ = JSON.stringify({ siteUrl: 'https://my-site.com', routes: ['/foo', '/bar'] });
     process.env.NODE_ENV = 'test';
     jest.clearAllMocks();
 });
@@ -27,28 +27,13 @@ it('should respond with the correct XML', async () => {
     expect(response.text).toEqual(expectedSitemap);
 });
 
-it('should trim trailing slashes from siteUrl', async () => {
-    global.__NEXT_ROUTES__ = '["/[page]"]';
-
-    const logWarning = jest.fn();
-    const handler = createSitemapApiHandler('https://my-site.com/', {
-        logWarning,
-    });
-
-    await request(enhance(handler))
-        .get('/')
-        .expect('Content-Type', 'application/xml')
-        .expect(200);
-
-    expect(logWarning).toHaveBeenCalledTimes(1);
-    expect(logWarning).toHaveBeenNthCalledWith(1, expect.stringContaining('/[page]'));
-});
-
 it('should respond with 500 if any mapper throws', async () => {
-    jest.spyOn(console, 'error').mockImplementation();
-    global.__NEXT_ROUTES__ = '["/[page]"]';
+    process.env._NEXT_SITEMAPS_ = JSON.stringify({ siteUrl: 'https://my-site.com', routes: ['/[page]', '/bar'] });
 
-    const handler = createSitemapApiHandler('https://my-site.com', {
+    jest.spyOn(console, 'error').mockImplementation();
+    process.env.__NEXT_ROUTES__ = '["/[page]"]';
+
+    const handler = createSitemapApiHandler({
         mapDynamicRoutes: {
             '/[page]': () => Promise.reject(new Error('foo')),
         },
@@ -70,7 +55,7 @@ it('should respond with 500 if any mapper throws', async () => {
 });
 
 it('should respond with the correct default Cache-Control', async () => {
-    let handler = createSitemapApiHandler('https://my-site.com');
+    let handler = createSitemapApiHandler();
 
     await request(enhance(handler))
         .get('/')
@@ -80,7 +65,7 @@ it('should respond with the correct default Cache-Control', async () => {
 
     process.env.NODE_ENV = 'production';
 
-    handler = createSitemapApiHandler('https://my-site.com');
+    handler = createSitemapApiHandler();
 
     await request(enhance(handler))
         .get('/')
@@ -90,7 +75,7 @@ it('should respond with the correct default Cache-Control', async () => {
 });
 
 it('should allow overriding Cache-Control', async () => {
-    const handler = createSitemapApiHandler('https://my-site.com', {
+    const handler = createSitemapApiHandler({
         cacheControl: 'public, max-age=999',
     });
 
@@ -102,11 +87,11 @@ it('should allow overriding Cache-Control', async () => {
 });
 
 it('should allow custom logError', async () => {
-    global.__NEXT_ROUTES__ = '["/[page]"]';
+    process.env._NEXT_SITEMAPS_ = JSON.stringify({ siteUrl: 'https://my-site.com', routes: ['/[page]'] });
 
     const logError = jest.fn();
     const err = new Error('foo');
-    const handler = createSitemapApiHandler('https://my-site.com', {
+    const handler = createSitemapApiHandler({
         logError,
         mapDynamicRoutes: {
             '/[page]': () => Promise.reject(err),
@@ -127,10 +112,10 @@ it('should allow custom logError', async () => {
 });
 
 it('should allow custom logWarning', async () => {
-    global.__NEXT_ROUTES__ = '["/[page]"]';
+    process.env._NEXT_SITEMAPS_ = JSON.stringify({ siteUrl: 'https://my-site.com', routes: ['/[page]'] });
 
     const logWarning = jest.fn();
-    const handler = createSitemapApiHandler('https://my-site.com', {
+    const handler = createSitemapApiHandler({
         logWarning,
     });
 
@@ -144,7 +129,7 @@ it('should allow custom logWarning', async () => {
 });
 
 it('should respond with 405 on unsupported HTTP methods', async () => {
-    const handler = createSitemapApiHandler('https://my-site.com');
+    const handler = createSitemapApiHandler();
 
     const response = await request(enhance(handler))
         .post('/')
@@ -162,18 +147,6 @@ it('should respond with 405 on unsupported HTTP methods', async () => {
 });
 
 it('should fail if plugin is not enabled', async () => {
-    delete global.__NEXT_ROUTES__;
-
-    const handler = createSitemapApiHandler('https://my-site.com');
-
-    const response = await request(enhance(handler))
-        .get('/')
-        .expect('Content-Type', /^application\/json/)
-        .expect(500);
-
-    expect(response.body).toEqual({
-        statusCode: 500,
-        error: 'Internal Server Error',
-        message: 'An internal server error occurred',
-    });
+    delete process.env._NEXT_SITEMAPS_;
+    expect(() => createSitemapApiHandler()).toThrow(/No _NEXT_SITEMAPS_ env variable found/);
 });

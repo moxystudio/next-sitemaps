@@ -1,0 +1,4 @@
+Sitemap: ${siteUrl}
+
+User-agent:*
+Disallow:

@@ -1,0 +1,4 @@
+Sitemap: http://foo.com
+
+User-agent:*
+Disallow:
