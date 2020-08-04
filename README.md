@@ -29,22 +29,19 @@ npm install @moxy/next-sitemaps
 **1. Add the plugin to `next.config.js`**
 
 ```js
-const withPlugins = require('next-compose-plugins');
 const withSitemap = require('@moxy/next-sitemaps/plugin');
 
-withPlugins([
-    // other plugins..
-    withSitemap(),
-    // other plugins...
-]);
+module.exports = (phase) => withSitemap(phase, 'https://moxy.studio')({ ...nextConfig });
 ```
+
+> ℹ️ If you have multiple plugins, you may simply compose them or use [`next-compose-plugins`](https://github.com/cyrilwanner/next-compose-plugins) for better readability.
 
 **2. Add the API handler on `pages/api/sitemap.xml.js`**
 
 ```js
 import createSitemapApiHandler from '@moxy/next-sitemaps';
 
-export default createSitemapApiHandler('https://moxy.studio', {
+export default createSitemapApiHandler({
     mapDynamicRoutes: {
         '/[id]': () => ['id1', 'id2'],
     },
@@ -54,31 +51,53 @@ export default createSitemapApiHandler('https://moxy.studio', {
 **3. Add the endpoint URL to your project's robots.txt file**
 
 ```txt
-Sitemap: https://moxy.studio/api/sitemap.xml
+Sitemap: ${siteUrl}/api/sitemap.xml
 User-agent:*
 Disallow:
 
 # ...
 ```
 
-> ℹ️ Please note that Sitemap URL must be a full absolute URL.
+> ℹ️ `${siteUrl}` will be replaced automatically by the `siteUrl` specified when instantiating the plugin.
+
+> ⚠️ During development, new pages will not be present in the XML. Restart the development server for page changes to take effect.
 
 ## API
 
-### withSitemap()
+### withSitemap(phase, siteUrl, [options])
 
-This plugin will match all files and directories inside the next's `/pages` folder and it will map them into URLs. Those mappings will be injected in a global variable called  `__NEXT_ROUTES__`, which will be picked by the API handler.
+The Next.js plugin that should be installed in `next.config.js`. It will do two things:
 
-### createSitemapApiHandler(siteUrl, [options])
+- Iterate over the `/pages` (or `src/pages`) folder and map all files into routes. These mappings will be used by the API Handler.
+- Replace the `${siteUrl}` placeholder inside `robots.txt` with `siteUrl`.
 
-Defines an API handler that will respond with a valid sitemap XML file containing the website pages.
+#### phase
+
+Type: `string`
+
+The Next.js current context phase. This plugin will only be active if `phase` is `PHASE_DEVELOPMENT_SERVER` or `PHASE_PRODUCTION_BUILD`.
 
 ##### siteUrl
 
 Type: `string`   
 Default: `'/'`
 
-The website URL, which will be used to prefix all page URLs.
+The website URL.
+
+#### options
+
+Type: `object`
+
+##### replaceSiteUrlInRobots
+
+Type: `boolean`
+Default: `true` if `process.env.NODE_ENV` is set to production
+
+This option will replace `${siteUrl}` inside `robots.txt`. During development, you want this option disabled to avoid checking in the resulting file into source-control (e.g.: git).
+
+### createSitemapApiHandler([options])
+
+Defines an API handler that will respond with a valid sitemap XML file containing the website pages.
 
 #### options
 

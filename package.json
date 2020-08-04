@@ -9,13 +9,14 @@
     "plugin.js",
     "!**/*.test.js",
     "!**/__snapshots__",
-    "!**/__mocks__"
+    "!**/__mocks__",
+    "!**/__fixtures__"
   ],
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore",
     "test": "jest",
-    "build:commonjs": "BABEL_ENV=commonjs babel src -d lib --delete-dir-on-start",
-    "build:es": "BABEL_ENV=es babel src -d es --delete-dir-on-start",
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src -d lib --delete-dir-on-start",
+    "build:es": "cross-env BABEL_ENV=es babel src -d es --delete-dir-on-start",
     "build": "npm run build:commonjs && npm run build:es",
     "prerelease": "npm t && npm run lint && npm run build",
     "release": "standard-version",
@@ -47,6 +48,7 @@
     "@moxy/eslint-config-jest": "^12.0.1",
     "@moxy/jest-config-base": "^5.0.0",
     "commitlint": "^9.1.0",
+    "cross-env": "^7.0.2",
     "eslint": "^6.8.0",
     "husky": "^4.2.3",
     "jest": "^26.1.0",

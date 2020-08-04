@@ -68,8 +68,8 @@ it('should map dynamic routes correctly', async () => {
 
 it('should map complex dynamic routes correctly', async () => {
     const routes = [
-        '/[page]',
         '/[page]/[foo]',
+        '/[page]',
         '/[page]/[foo]/barz',
         '/',
         '/[page]/[foo]/barz/[bar]',
