@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/moxystudio/next-sitemaps-plugin/compare/v2.0.1...v3.0.0) (2020-08-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* the plugin and API handler instantiation have changed
+
+### Features
+
+* support replacing robots.txt with the siteUrl ([#9](https://github.com/moxystudio/next-sitemaps-plugin/issues/9)) ([bc63c85](https://github.com/moxystudio/next-sitemaps-plugin/commit/bc63c859c487453e5f451f076313d240a2d3f4fd)), closes [#8](https://github.com/moxystudio/next-sitemaps-plugin/issues/8)
+
 ### [2.0.1](https://github.com/moxystudio/next-sitemaps-plugin/compare/v2.0.0...v2.0.1) (2020-07-31)
 
 
