@@ -52,6 +52,7 @@ export default createSitemapApiHandler({
 
 ```txt
 Sitemap: ${siteUrl}/api/sitemap.xml
+
 User-agent:*
 Disallow:
 
