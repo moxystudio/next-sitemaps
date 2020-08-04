@@ -24,8 +24,6 @@ npm install @moxy/next-sitemaps
 
 ## Usage
 
-### Simple usage
-
 **1. Add the plugin to `next.config.js`**
 
 ```js
@@ -48,7 +46,7 @@ export default createSitemapApiHandler({
 });
 ```
 
-**3. Add the endpoint URL to your project's robots.txt file**
+**3. Add robots.txt file**
 
 ```txt
 Sitemap: ${siteUrl}/api/sitemap.xml
@@ -59,7 +57,7 @@ Disallow:
 # ...
 ```
 
-> ℹ️ `${siteUrl}` will be replaced automatically by the `siteUrl` specified when instantiating the plugin.
+Please note that `${siteUrl}` will be replaced automatically by the `siteUrl` specified when instantiating the plugin. However, the replacement will not happen during development to avoid checking in the changed file into source-control (e.g.: git).
 
 > ⚠️ During development, new pages will not be present in the XML. Restart the development server for page changes to take effect.
 
@@ -91,7 +89,7 @@ Type: `object`
 
 ##### replaceSiteUrlInRobots
 
-Type: `boolean`
+Type: `boolean`   
 Default: `true` if `process.env.NODE_ENV` is set to production
 
 This option will replace `${siteUrl}` inside `robots.txt`. During development, you want this option disabled to avoid checking in the resulting file into source-control (e.g.: git).
@@ -199,14 +197,16 @@ You might have routes with several dynamic placeholders. In this case, first-lev
 createSitemapApiHandler('https://moxy.studio', {
     mapDynamicRoutes: {
         '/[company]': async () => {
-            const companies = await fetchCompanies(); // returns ['microsoft', 'apple']
+            // Returns ['microsoft', 'apple']
+            const companies = await fetchCompanies();
 
             return companies;
         },
         // The function below will be called two times.
         // The first will have `company` set microsoft and the second one will have it set to `apple`.
         '/[company]/[apps]': ({ company }) => {
-            const apps = fetchCompanyApps(company); // returns ['vscode', 'vsstudio'] for microsoft and returns ['itunes'] for apple
+            // Returns ['vscode', 'vsstudio'] for microsoft and returns ['itunes'] for apple.
+            const apps = fetchCompanyApps(company);
 
             return apps;
         },
