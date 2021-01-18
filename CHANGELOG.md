@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.1](https://github.com/moxystudio/next-sitemaps-plugin/compare/v3.2.0...v3.2.1) (2021-01-18)
+
+
+### Bug Fixes
+
+* next 10 compat ([fcba455](https://github.com/moxystudio/next-sitemaps-plugin/commit/fcba455400960c146e6a4bf089fd37efbd5a7af5))
+
 ## [3.2.0](https://github.com/moxystudio/next-sitemaps-plugin/compare/v3.1.0...v3.2.0) (2021-01-18)
 
 
