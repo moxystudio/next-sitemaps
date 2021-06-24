@@ -1,6 +1,6 @@
 {
   "name": "@moxy/next-sitemaps",
-  "version": "3.2.2",
+  "version": "3.3.0",
   "description": "Library to generate sitemaps in a next application",
   "main": "lib/index.js",
   "files": [
