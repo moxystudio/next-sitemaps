@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/moxystudio/next-sitemaps-plugin#readme",
   "peerDependencies": {
-    "next": ">=8 <=11"
+    "next": ">=8 <13"
   },
   "dependencies": {
     "@hapi/boom": "^9.1.2",
