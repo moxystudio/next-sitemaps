@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { apiResolver } from 'next/dist/next-server/server/api-utils';
+import { apiResolver } from 'next/dist/server/api-utils/node';
 import createSitemapApiHandler from '.';
 
 const enhance = (handler) => (req, res) => apiResolver(req, res, undefined, handler);
